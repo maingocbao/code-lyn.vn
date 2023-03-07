@@ -1,0 +1,93 @@
+<?php
+$storeId = $GLOBALS['domainConfigs']['storeId'];
+
+$this->headTitle($this->translate("Trang cá nhân"));
+/* @var $user \User\Model\User */
+$user = $this->user;
+$this->headScript()->appendFile($this->libs()->srcLink([
+    '/js/jquery/jquery.validationEngine-vi.js',
+    '/js/jquery/jquery.validationEngine.js',
+    '/tp/T0367/js/user.js',
+], 1));
+$this->headLink()->appendStylesheet($this->libs()->srcLink([
+    '/tp/T0367/css/user.css',
+], 1));
+$customer = [];
+if ((isset($user) && !empty($user)) && $user->getMobile()) {
+    $customer = $this->store()->getCustomerStore([
+        'mobile' => $user->getMobile()
+    ]);
+}
+
+$points = 0;
+$customTotalMoney = 0;
+if ($customer) {
+    $points = $customer->getPoints();
+    $customTotalMoney = $customer->getTotalMoney();
+}
+?>
+<div class="container">
+    <div class="row">
+        <div class="col-md-2 col-lg-2 col-xs-12 col-sm-12">
+            <div class="menuPv">
+                <div class="userList">
+                    <a href="/profile"><b><?= $this->translate('Tài khoản của tôi') ?></b></a>
+                    <a href="/profile/edit"><?= $this->translate('Thông tin cá nhân') ?></a>
+                    <a href="/order"><?= $this->translate('Lịch sử đơn hàng') ?></a>
+                    <a href="/profile/changepassword"><?= $this->translate('Thay đổi mạt khẩu') ?></a>
+                    <a href="/user/signout"><?= $this->translate('Đăng xuất') ?></a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-10 col-lg-10 col-xs-12 col-sm-12">
+            <div class="ctrl-wrapper">
+                <div id="profileContent">
+                    <h1><?= $this->translate('Tài khoản của tôi') ?></h1>
+                    <div class="userIndex">
+                        <div class="col-lg-3 col-md-3 col-xs-12 col-sm-3 userList1">
+                            <h2>
+                                <span><b><?= (isset($user) && $user) ? $user->getFullName() : $this->translate('Đang cập nhật') ?></b></span>
+                            </h2>
+                            <span><?= (isset($user) && $user) ? $user->getEmail() : '' ?></span>
+                        </div>
+                        <div class="col-lg-2 col-md-2 col-xs-12 col-sm-2 userList1">
+                            <span><b><?= $this->translate('Sinh nhật') ?></b></span>
+                            <span><?= (isset($user) && $user) ? date('d/m/Y', strtotime($user->getBirthday())) : '' ?></span>
+                        </div>
+                        <div class="col-lg-2 col-md-2 col-xs-12 col-sm-2 userList1">
+                            <span><b><?= $this->translate('Điện thoại') ?></b></span>
+                            <span><?= $user->getMobile() ?></span>
+                        </div>
+                        <div class="col-lg-3 col-md-3 col-xs-12 col-sm-3 userList1">
+                            <span><b><?= $this->translate('Đã chi tiêu') ?></b></span>
+                            <span>
+                                <?= number_format($customTotalMoney) ?> VNĐ
+                            </span>
+                        </div>
+                        <div class="col-lg-2 col-md-2 col-xs-12 col-sm-2 userList1">
+                            <span><b><?= $this->translate('Điểm tích lũy') ?></b></span>
+                            <span><?= $points ?></span>
+                        </div>
+                    </div>
+
+                    <div id="profileIf">
+                        <div class="userProfile">
+                            <h3><b><?= $this->translate('Thông tin cá nhân') ?></b></h3>
+                            <?= $this->template()->loadValue('PROFILE_INDEX_DESCRIPTION') ?>
+                        </div>
+                        <div class="userProfile">
+                            <h3><b><?= $this->translate('Địa chỉ nhận hàng') ?></b></h3>
+                            <?= $this->template()->loadValue('ADDRESS_INDEX_DESCRIPTION') ?>
+                        </div>
+                        <div class="userProfile">
+                            <h3><b><?= $this->translate('Lịch sử đơn hàng') ?></b></h3>
+                            <?= $this->template()->loadValue('ORDER_INDEX_DESCRIPTION') ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+

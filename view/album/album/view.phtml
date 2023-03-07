@@ -1,0 +1,31 @@
+<?php
+/** @var \Album\Model\Album $album */
+$album = $this->album;
+$this->headTitle($album->getName());
+$this->headMeta()->appendName('keywords',$album->getMetaDescription() ? : $album->getName());
+$this->headMeta()->appendName('description',$album->getMetaDescription() ? : $album->getName());
+$this->headMeta()->appendProperty('og:title',$album->getName());
+$this->headMeta()->appendProperty('og:type', 'article');
+$this->headMeta()->appendProperty('og:image', $album->getThumbnailUri());
+$items = $this->album()->fetchAllItem($album->getId());
+?>
+<div class="container">
+    <div class="row justify-content-xl-center">
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 pageAlbum">
+            <h1 class="title-page tp_title"><?=$album->getName()?></h1>
+            <div class="post-content">
+                <?= $album->getContent() ?: '' ?>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+
+    .post-content img{
+        height: 100%;
+    }
+    .title-page{
+        margin-top: 20px;
+        font-size: 17px;
+    }
+</style>

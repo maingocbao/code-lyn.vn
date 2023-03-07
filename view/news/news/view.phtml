@@ -1,0 +1,126 @@
+<?php
+$this->layout('/layout/layoutnews');
+$storeId = $GLOBALS['domainConfigs']['storeId'];
+/* @var $news \News\Model\Article */
+$news = $this->news;
+
+$tags = $news->getTags();
+$this->headTitle($this->translate($news->getSourceLink() ?: $news->getTitle()));
+$this->headMeta()->appendName('description', ($news->getMetaDescription() ?: $news->getTitle()));
+$this->headMeta()->appendName('keywords', ($news->getMetaKeywords() ?: $news->getTitle()));
+$this->headMeta()->appendProperty('og:title', ($news->getSourceLink() ?: $news->getTitle()));
+$this->headMeta()->appendProperty('og:type', 'news');
+$this->headMeta()->appendProperty('og:image', $news->getPictureUri());
+$this->headMeta()->appendProperty('og:url', getCurrentFullUrl());
+$this->headLink([
+    'rel' => 'canonical',
+    'href' => getCurrentFullUrl(true) . $news->getViewLink()
+]);
+
+/* @var $category \Website\Model\News\NewsCategoryModel */
+$category = $this->category;
+$categories = $this->newsCategory()->getCategories();
+$bottomNewsRight = $this->news()->getLastestNews(['limit' => 5]);
+$idNew = $this->template()->loadValue('ID_NEWS_ID');
+if($idNew){
+    $idNew = explode(",", $idNew);
+    if(in_array($news->getId(), $idNew)){
+        echo $this->render('news/news/brandStory');
+        return;
+    }
+}
+?>
+<div class="BlogPostContainer-sc-zll4jl-12 TBuui">
+    <div id="content" class="Content-sc-1tlae3t-2 PostContent-sc-zll4jl-8 cJLAEW" style="position: static; z-index: 0;">
+        <img src="<?= $news->getPictureUri() ?>">
+        <div class="main-views-news">
+            <div class="news-title">
+                <h1><?= $news->getTitle() ?> </h1></div>
+            <div class="date-time"><i
+                        class="fal fa-alarm-clock"></i><?= date('d.m.Y', strtotime($news->getCreatedDateTime())) ?>
+            </div>
+            <div class="content-news">
+                <?= $news->getContent() ?: '' ?>
+            </div>
+        </div>
+
+    </div>
+    <?php
+    $newView = $this->news()->getLastestNews([
+        'limit' => 5
+    ]);
+    if ($newView) { ?>
+        <article id="tile-topics" class="Topics-sc-15m29xd-0 iKcNwf"><h4>Tin Tức Mới Nhất</h4>
+            <ul>
+                <?php
+                $i = 0;
+                /** @var  $lstNews \News\Model\Article */
+                foreach ($newView as $lstNews) {
+                    $i++;
+                    ?>
+
+                    <div class="Parent-sc-15m29xd-1 ekDKJi">
+                        <div class="Image-sc-15m29xd-2 bevvim">
+                            <picture>
+                                <source class="imglarge" data-srcset="<?= $lstNews->getPictureUri() ?>" media="(max-width: 767px)">
+
+                                <source class="imgsmall" data-srcset="<?= $lstNews->getPictureUri() ?>" media="(min-width: 768px)">
+
+                                <img class="img-loop lazyload dt-width-100" width="100%" height="100px" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAANSURBVBhXYzh8+PB/AAffA0nNPuCLAAAAAElFTkSuQmCC" alt="" />
+                            </picture>
+                            <span><?= $i ?></span></div>
+                        <div class="Info-sc-15m29xd-3 dllwHL"><a href="<?= $lstNews->getViewLink() ?>">
+                                <h5><?= $lstNews->getTitle() ?></h5></div>
+                    </div>
+                <?php } ?>
+            </ul>
+        </article>
+    <?php } ?>
+
+</div>
+<div class="Container-sc-bvr2xy-0 eaGSXq">
+    <div class="TileWrap-sc-bvr2xy-1 dcbTLw"><h2>Tin cùng danh mục</h2>
+        <?php
+        $relatedNews = $this->news()->searchNewsByCategory($news->getCategoryId(), [
+            'limit' => 6,
+            'excludedIds' => $news->getId()
+        ]);
+        if ($relatedNews) { ?>
+            <section class="Styles__Carousel-re8243-0 pDhFf">
+                <div class="Styles__ItemsWrapper-re8243-2 bSactU">
+                    <?php
+                    /** @var \News\Model\Article $n */
+                    foreach ($relatedNews as $n) { ?>
+                        <div class="Styles__MobileItem-re8243-1 fpDcKm">
+                            <div class="Item-sc-bvr2xy-2 kyyATg">
+                                <article id="tile-7c3js0bQYFUzXJdEIaF6Ek" class="TileWrapper-sc-aw78hl-0 kEUIkN">
+                                    <div class="ImageWrapper-sc-aw78hl-1 gayPdQ">
+                                        <picture>
+                                            <source class="imglarge" data-srcset="<?= $n->getPictureUri() ?>" media="(max-width: 767px)">
+
+                                            <source class="imgsmall" data-srcset="<?= $n->getPictureUri() ?>" media="(min-width: 768px)">
+
+                                            <img class="img-loop lazyload dt-width-100" width="100%" height="300px" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAANSURBVBhXYzh8+PB/AAffA0nNPuCLAAAAAElFTkSuQmCC" alt="" />
+                                        </picture>
+                                    </div>
+                                    <div class="ContentWrapper-sc-aw78hl-2 eSRqEO">
+                                        <div class="Heading-sc-cmrb08-0 cDexsf">
+                                            <a href="<?= $n->getViewLink() ?>" title="<?= $n->getTitle() ?>">
+                                                <h3><?= $n->getTitle() ?></h3></span></a>
+                                            <p class="Caption-sc-cmrb08-3 gvNRVK"> <?= $this->escapeHtml(strip_tags($n->getIntro(true))) ?>    </p>
+                                        </div>
+                                    </div>
+                                    <div class="Footer-sc-aw78hl-3 cnKova">
+                                        <div class="Date-sc-z4ng8n-0 ednsIo">
+                                            <span>(<?= date('d/m/Y H:iA', strtotime($news->getCreatedDateTime())) ?>)</span>
+                                        </div>
+                                    </div>
+                                </article>
+                            </div>
+                        </div>
+                    <?php } ?>
+                </div>
+            </section>
+        <?php } ?>
+    </div>
+</div>

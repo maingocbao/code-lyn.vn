@@ -1,0 +1,202 @@
+<?php
+$storeId = $GLOBALS['domainConfigs']['storeId'];
+$keyMenu = $storeId . "_MENU_CUSTOM_".$GLOBALS['domainConfigs']['domainId'];
+$idCategory = $this->template()->loadValue('ID_CATEGORY_ID');
+if($idCategory){
+    $idCategory = explode(",", $idCategory);
+}
+$text = strip_tags($this->template()->loadValue('CUSTOM_TEXT'));
+if (!!($cacheResults = $this->template()->getCache($keyMenu))) {
+    echo $cacheResults;
+    return $cacheResults;
+}
+
+$menus = $this->template()->getMenus(\Website\Model\Menu::POSITION_HEADER);
+$cacheResults = "";
+if ($menus) {
+    $cacheResults .= '<ul class="menu-block">';
+    /* @var $m \Website\Model\Menu */
+    foreach ($menus as $m) {
+        if (in_array($m->getType(), $m->getTypeCates())) {
+            $categories = $this->template()->getCategoryTypeMenu($m->getType());
+            if ($categories) {
+                if ($m->getType() == \Website\Model\Menu::TYPE_ALL_PRODUCT_CATEGORY) {
+                    /* @var $c \Product\Model\Category  */
+                    foreach ($categories as $c) {
+                        $cacheResults .= '<li class="menu__item" itemprop="name">';
+                        if(in_array($c->getId(), $idCategory)){
+                            $cacheResults .= '<a itemprop="url" href="javascript:" data-id="' . $c->getId() . '" data-name="' . $c->getDescription() . '" title="' . $c->getName() . '" class="fyiWko category_menu tp_menu_item menu_' . $c->getId() . '">';
+                        }else {
+                            $cacheResults .= '<a itemprop="url" href="' . $c->getViewLink() . '" title="' . $c->getName() . '" class="fyiWko tp_menu_item menu_' . $c->getId() . '">';
+                        }
+                        $cacheResults .= $c->getName() . '</a>';
+
+                        if($c->getChilds()){
+                            $cacheResults .= '<div class="menu__content">
+                                           <div class="menu-c2">
+                                               <nav class="menu-desktop-left">
+                                                    <ul class="menu__list menu__list--second">';
+                            /** @var  $c2 \Product\Model\Category*/
+                            foreach ($c->getChilds() as $c2){
+                                $caretRight = '';
+                                $cacheResults .= '<li class="menu__item third">
+                                <a href="'.$c2->getViewLink().'" class="menu__color-text">'.$c2->getName() .'</a>
+                                 '.$caretRight .'';
+                                if($c2->getChilds()){
+                                    $cacheResults .= '<ul class="menu__item-c3">';
+                                    /** @var  $c3 \Product\Model\Category*/
+                                    foreach ($c2->getChilds() as $c3){
+                                        $caretRight = '';
+                                        $cacheResults .= '<li class="menu-li-c3"><a href="'.$c3->getViewLink().'">'.$c3->getName().'</a>
+                                                        '.$caretRight .'';
+                                        //dm cấp 4
+                                        if($c3->getChilds()){
+                                            $cacheResults .= '<ul class="menu__list menu__list--four">';
+                                            /** @var  $c4 \Product\Model\Category*/
+                                            foreach ($c3->getChilds() as $c4){
+                                                $cacheResults .= '<li><a href="'.$c4->getViewLink().'">'.$c4->getName() .'</a></li>';
+                                            }
+                                            $cacheResults .= '</ul>';
+                                        }
+                                        $cacheResults .= '</li>';
+                                    }
+                                    $cacheResults .= '</ul>';
+                                }
+                                $cacheResults .= '</li>';
+                            }
+                            $cacheResults .= '</ul>';
+                            $cacheResults .= '<ul class="menu__list menu_list_img">';
+                            $cacheResults .= '<li class="menu__item">';
+                            $cacheResults .= '<a class="menu__link" href="'.$c->getViewLink().'" title="">';
+                            $cacheResults .= '</a>';
+                            $cacheResults .= '</li>';
+                            $cacheResults .= '</ul>';
+                            $cacheResults .= '       </nav>
+                                            </div>
+                                        </div>';
+                        }
+                        $cacheResults .= '</li>';
+                    }
+                } else {
+                    /* @var $c \Website\Model\News\NewsCategoryModel  */
+                    foreach ($categories as $c) {
+                        $cacheResults .= '<li class="menu__item"><a href="/news" title="'. $c->getName() .'" class="fyiWko tp_menu_item menu_'.$c->getId().'">' . $c->getName() . '<i class="fal fa-chevron-down" aria-hidden="true"></i></a>';
+                        if ($c->getChilds()) {
+                            $cacheResults .= ' <div class="menu__content">';
+                            $cacheResults .= '<div class="menu-c2">';
+                            $cacheResults .= ' <nav class="menu-desktop-left">';
+                            $cacheResults .= '<ul class="menu__list menu__list--second">';
+                            /** @var  $n \Website\Model\News\NewsCategoryModel */
+                            foreach ($c->getChilds() as $n) {
+                                $cacheResults .= '<li class="menu__item-third"><a href="' . $n->getViewLink() . '" title="' . $n->getName() . '" class="enu__color-text">' . $n->getName() . '</a></li>';
+                            }
+                            $cacheResults .= '</ul>';
+                            $cacheResults .= '</nav>';
+                            $cacheResults .= '</div>';
+                            $cacheResults .= '</div>';
+                        }
+                        $cacheResults .= '</li>';
+                    }
+                }
+
+            }
+        }
+        else {
+            $cacheResults .= '<li itemprop="name" class="menu__item'.(($m->getName() == $text || ($m->getName() == "THƯƠNG HIỆU" && $storeId ==  28099))?"pre-menu":"").'">';
+            $cacheResults .= '<a itemprop="url" href="'.$m->getViewLink().'" title="'.$m->getName().'" class="fyiWko tp_menu_item menu_'.$m->getId().'">';
+
+            $cacheResults .= $m->getName() . '</a>';
+            if($m->getChilds()){
+                $cacheResults .= ' <div class="menu__content">
+                                           <div class="menu-c2">
+                                                <nav class="menu-desktop-left">
+                     <ul class="menu__list menu__list--second">';
+                /* @var $c2 \Website\Model\Menu */
+                foreach ($m->getChilds() as $c2){
+                    if (in_array($c2->getType(), $c2->getTypeCates())) {
+                        $categories = $this->template()->getCategoryTypeMenu($c2->getType());
+                        if ($categories) {
+                            /* @var $cate \Product\Model\Category */
+                            foreach ($categories as $cate) {
+                                $caretRight = '';
+                                $cacheResults .= '<li class="menu__item third">
+                                <a href="'.$cate->getViewLink().'" class="menu__color-text">'.$cate->getName() .'</a>
+                                 '.$caretRight .'';
+                                if($cate->getChilds()){
+                                    $cacheResults .= '<ul class="menu__item-c3">';
+                                    /** @var  $c3 \Product\Model\Category*/
+                                    foreach ($cate->getChilds() as $c3){
+                                        $caretRight = '';
+                                        $cacheResults .= '<li class="menu-li-c3"><a href="'.$c3->getViewLink().'">'.$c3->getName().'</a>
+                                                        '.$caretRight .'';
+                                        //dm cấp 4
+                                        if($c3->getChilds()){
+                                            $cacheResults .= '<ul class="menu__list menu__list--four">';
+                                            /** @var  $c4 \Product\Model\Category*/
+                                            foreach ($c3->getChilds() as $c4){
+                                                $cacheResults .= '<li><a href="'.$c4->getViewLink().'">'.$c4->getName() .'</a></li>';
+                                            }
+                                            $cacheResults .= '</ul>';
+                                        }
+                                        $cacheResults .= '</li>';
+                                    }
+                                    $cacheResults .= '</ul>';
+                                }
+                                $cacheResults .= '</li>';
+                            }
+                        }
+                    }else {
+                        $caretRight = '';
+                        $cacheResults .= '<li class="menu__item third">
+                            <a href="' . $c2->getViewLink() . '" class="menu__color-text" title="' . $c2->getName() . '">' . $c2->getName() . '</a>
+                             ' . $caretRight . '';
+                        //cap 3
+                        if ($c2->getChilds()) {
+                            $cacheResults .= '<ul class="menu__item-c3">';
+                            /** @var  $c3 \Product\Model\Category */
+                            foreach ($c2->getChilds() as $c3) {
+                                $caretRight = '';
+                                $cacheResults .= '<li class="menu-li-c3"><a href="' . $c3->getViewLink() . '">' . $c3->getName() . '</a>
+                                                 ' . $caretRight . '';
+                                //dm cấp 4
+                                if ($c3->getChilds()) {
+                                    $cacheResults .= '<ul class="menu__list menu__list--four">';
+                                    /** @var  $c4 \Product\Model\Category */
+                                    foreach ($c3->getChilds() as $c4) {
+                                        $cacheResults .= '<li><a href="' . $c4->getViewLink() . '">' . $c4->getName() . '</a></li>';
+                                    }
+                                    $cacheResults .= '</ul>';
+                                }
+                                $cacheResults .= '</li>';
+                            }
+                            $cacheResults .= '</ul>';
+                        }
+                        $cacheResults .= '</li>';
+                        $cacheResults .= '</li>';
+                    }
+                }
+                $cacheResults .= '</ul>';
+                $cacheResults .= '<ul class="menu__list menu_list_img">';
+                $cacheResults .= '<li class="menu__item">';
+                $cacheResults .= '<a class="menu__link" href="'.$m->getViewLink().'" title="">';
+                if($m->getImgUri()) {
+                    $cacheResults .= '<img data-sizes="auto" class="lazyload" src="/img/lazyLoading.gif"
+                                                     data-src="' . $m->getImgUri() . '" alt="' . $m->getName() . '">';
+                }
+                $cacheResults .= '</a>';
+                $cacheResults .= '</li>';
+                $cacheResults .= '</ul>';
+                $cacheResults .= '       </nav>
+                                            </div>
+                                        </div>';
+            }
+            $cacheResults .= '</li>';
+        }
+    }
+    $cacheResults .= '</ul>';
+}
+echo $cacheResults;
+
+// cache 30 phút
+$this->template()->saveCache($keyMenu, $cacheResults, 1800);
+return $cacheResults;

@@ -1,0 +1,130 @@
+<?php
+$storeId = $GLOBALS['domainConfigs']['storeId'];
+
+$this->headTitle($this->translate("Trang cập nhập thông tin tài khoản"));
+$this->headScript()->appendFile($this->libs()->srcLink([
+    '/js/jquery/jquery.validationEngine-vi.js',
+    '/js/jquery/jquery.validationEngine.js',
+    '/tp/T0367/js/editprofile.js',
+    '/tp/T0367/js/user.js',
+], 1));
+$this->headLink()->appendStylesheet($this->libs()->srcLink([
+    '/css/validationEngine.jquery.css',
+    '/tp/T0367/css/user.css',
+], 1));
+/** @var  $user \User\Model\User */
+$user = $this->user;
+$cities = $this->cities;
+$districts = $this->districts;
+?>
+<div class="container" style="padding-bottom: 45px">
+    <div class="row">
+        <div class="col-md-2 col-lg-2 hidden-xs hidden-sm">
+            <div class="menuPv">
+                <div class="userList">
+                    <a href="/profile"><?= $this->translate('Tài khoản của tôi') ?></a>
+                    <a href="/profile/edit"><b><?= $this->translate('Thông tin cá nhân') ?></b></a>
+                    <a href="/order"><?= $this->translate('Lịch sử đơn hàng') ?></a>
+                    <a href="/profile/changepassword"><?= $this->translate('Thay đổi mạt khẩu') ?></a>
+                    <a href="/user/signout"><?= $this->translate('Đăng xuất') ?></a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-10 col-lg-10 col-xs-12 col-sm-12 profileRight">
+            <div class="ctrl-wrapper">
+                <div id="profileContent">
+                    <h1><?= $this->translate('Thông tin cá nhân') ?></h1>
+                    <div class="desUserIndex">
+                        <?= $this->template()->loadValue('PROFILE_INDEX_DESCRIPTION') ?>
+                    </div>
+                    <div id="profileIf">
+                        <div class="row">
+                            <form class='profile' method='post' action=''>
+                                <div class="pf col-lg-6 col-md-6 col-sm-12 col-xs-12 itemsPr">
+                                    <span><?= $this->translate('Tên đăng nhập') ?></span>
+                                    <span><b><?= $user->getUsername(); ?></b></span>
+                                    <div class="row">
+                                        <div class="pf col-lg-12 col-md-12 col-sm-12 col-xs-12 itemsPr">
+                                            <span><?= $this->translate('Ngày sinh') ?></span>
+                                            <span><b><input name='birthday' type='date'
+                                                            value='<?= $user->getBirthday() ?>'
+                                                            class='validate[required] inputDateEdit'/></b></span>
+                                            <input type="hidden" class="birthdayChange" value="">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="pf col-lg-6 col-md-6 col-sm-12 col-xs-12 itemsPr">
+                                    <span><?= $this->translate('Điện thoại') ?></span>
+                                    <span><b><input name='mobile' type='text' value='<?= $user->getMobile(); ?>'
+                                                    class='validate[required]'/></b></span>
+                                </div>
+                                <div class="pf col-lg-6 col-md-6 col-sm-12 col-xs-12 itemsPr">
+                                    <span><?= $this->translate('Thành phố') ?></span>
+                                    <span>
+                                        <b>
+                                             <select name='cityId' id='cityId'>
+                                             <option value="">Chọn Tỉnh/ thành phố</option>
+                                                 <?php foreach ($cities as $city) {
+                                                     /*@var $city \Address\Model\Location */
+                                                     ?>
+                                                     <option <?= ($city->getId() == $user->getCityLocationId()) ? 'selected="selected"' : ''; ?> value='<?php echo $city->getId() ?>'><?php echo $city->getNativeName() ?></option>
+                                                 <?php } ?>
+                                            </select>
+                                        </b>
+                                    </span>
+                                </div>
+
+                                <div class="pf col-lg-6 col-md-6 col-sm-12 col-xs-12 itemsPr">
+                                    <span><?= $this->translate('Quận huyện') ?></span>
+                                    <span>
+                                        <b>
+                                           <select name='districtId' id='districtId'>
+                                                <option value="">Chọn Quận/ Huyện</option>
+                                               <?php
+                                               if ($districts) {
+                                                   foreach ($districts as $dt) {
+                                                       ?>
+                                                       <option <?= ($dt->getId() == $user->getDistrictLocationId()) ? 'selected="selected"' : ''; ?>
+                                            value='<?php echo $dt->getId() ?>'><?php echo $dt->getName() ?></option>
+                                                       <?php
+                                                   }
+                                               }
+                                               ?>
+                                            </select>
+                                        </b>
+                                    </span>
+                                </div>
+                                <div class="pf col-lg-6 col-md-6 col-sm-12 col-xs-12 itemsPr">
+                                    <span><?= $this->translate('Địa chỉ') ?></span>
+                                    <span><b><input type='text' name='address'
+                                                    value='<?php echo $user->getAddress(); ?>'
+                                                    class='validate[required]'/></b></span>
+                                </div>
+                                <div class="pf col-lg-6 col-md-6 col-sm-12 col-xs-12 itemsPr">
+                                    <span><?= $this->translate('Email') ?></span>
+                                    <Span><b><?= $user->getEmail() ?></b></Span>
+                                </div>
+                                <div class="pf col-lg-6 col-md-6 col-sm-12 col-xs-12 itemsPr">
+
+                                </div>
+                                <div class="pf col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                    <button type="submit"
+                                            class="btnGreen tp_button"><?= $this->translate('Cập nhật thông tin cá nhân') ?></button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<style>
+    .ui-datepicker select.ui-datepicker-month, .ui-datepicker select.ui-datepicker-year {
+        color: #000 !important;
+    }
+</style>
+
+

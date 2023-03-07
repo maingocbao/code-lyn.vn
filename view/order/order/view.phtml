@@ -1,0 +1,626 @@
+<?php
+$storeId = $GLOBALS['domainConfigs']['storeId'];
+$this->layout('layout/layoutnull');
+$this->headTitle($this->translate("Đặt hàng thành công"));
+$this->headMeta()->appendName('keywords', $this->template()->loadValue('META_KEYWORDS'));
+$this->headMeta()->appendName('description', $this->template()->loadValue('META_DESCRIPTION'));
+$this->headMeta()->appendProperty('og:title', $this->template()->loadValue('META_TITLE'));
+$this->headMeta()->appendProperty('og:url', 'http://' . $_SERVER['HTTP_HOST']);
+$this->headMeta()->appendProperty('og:type', '');
+/* @var $ord \Order\Model\Order */
+$ord = $this->order;
+$orderId = $ord->getId();
+$money = $ord->calculateTotalMoney();
+$products = $ord->getProducts();
+$payment = new \Payment\Service\Payment();
+$extraContent = json_decode(gzuncompress($ord->getExtraContent()), true);
+$moneyUsedPoints = !empty($extraContent['moneyUsedPoints']) ? $extraContent['moneyUsedPoints'] : 0;
+$priced = ' ₫';
+?>
+<html class="thankyou-page">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+    <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
+<body data-no-turbolink="">
+<div class="content">
+    <form>
+        <div class="wrap wrap--mobile-fluid">
+            <main class="main main--nosidebar">
+                <header class="main__header">
+                </header>
+                <div class="main__content">
+                    <article class="row">
+                        <div class="col col--primary text-center" style="padding-top: 50px; padding-bottom: 30px;">
+                            <section class="section section--heading">
+                                <div class="section__title unprintable">
+                                    <h2>CHI TIẾT ĐƠN HÀNG</h2>
+                                </div>
+                            </section>
+                        </div>
+                        <div class="col col--secondary">
+                            <aside class="order-summary order-summary--bordered order-summary--is-collapsed"
+                                   id="order-summary">
+                                <div class="logo logo--left ">
+                                    <h1 class="shop__logo">
+                                        <a href="/" class="logo">
+                                            <h1 class="logo-text"><img style="max-width: 200px" alt="Logo"
+                                                                       src="<?= $this->store()->getLogoUri() ?: '/img/nhanh.png' ?>"/>
+                                            </h1>
+                                        </a>
+                                    </h1>
+                                </div>
+                                <div class="order-title">
+                                    <p class="section__text__header text-center">
+                                        Đơn hàng của bạn đã được nhận, <br>
+                                        chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất.
+                                    </p>
+                                </div>
+                                <div class="order-summary__header">
+                                    <div class="order-summary__title">
+                                        <?= $this->translate('Mã đơn hàng:') ?> #<b><?= $ord->getId() ?></b>
+                                    </div>
+                                </div>
+                                <div class="information">
+                                    <table>
+                                        <tbody>
+                                        <tr class="title-line title-line-subname">
+                                            <td class="title-line-name"><?= $this->translate('TÊN KHÁCH HÀNG') ?>:</td>
+                                            <td class="title-line-valuename">
+                                                <span class="order-summary-emphasis"><?= $ord->getCustomerName() ?></span>
+                                            </td>
+                                        </tr>
+                                        <tr class="title-line title-line-subphone">
+                                            <td class="title-line-phone"><?= $this->translate('SỐ ĐIỆN THOẠI') ?>:</td>
+                                            <td class="title-line-valuephone">
+                                                <span class="order-summary-emphasis"><?= $ord->getCustomerMobile() ?></span>
+                                            </td>
+                                        </tr>
+                                        <tr class="title-line title-line-subdate">
+                                            <td class="title-line-date"><?= $this->translate('NGÀY') ?>:</td>
+                                            <td class="title-line-valuedate">
+                                                <span class="order-summary-emphasis"><?= date("d-m-Y", strtotime($ord->getCreatedDate())) ?></span>
+                                            </td>
+                                        </tr>
+                                        <tr class="title-line title-line-subtotal">
+                                            <td class="title-line-total"><?= $this->translate('TỔNG CỘNG') ?>:</td>
+                                            <td class="title-line-price">
+                                                <span class="order-summary-emphasis"><?= number_format($money - $moneyUsedPoints) . $priced ?></span>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="thankyou-message-container">
+                                    <p class="section__text__footer">
+                                        CẢM ƠN BẠN ĐÃ TIN TƯỞNG LYB
+                                    </p>
+                                </div>
+                            </aside>
+                        </div>
+                        <div class="col col--primary mb">
+
+                            <div class="total-line-text total-text">
+                                <p class="total-line-name"><?= $this->translate('SẢN PHẨM') ?></p>
+                                <p class="total-line-name"><?= $this->translate('TỔNG') ?></p>
+                            </div>
+                            <section class="section-prod">
+                                <div class="section__product section__product--bordered">
+                                <table>
+                                    <tbody>
+                                    <?php
+                                    if ($products) {
+                                        /** @var  $porder \Product\Model\Store */
+                                        foreach ($products as $porder) {
+                                            $p = $porder->getProduct();
+                                            $moneyDiscount = $p->getPriceAfterDiscount($porder->getQuantity());
+                                            ?>
+                                            <tr class="product">
+                                                <td class="product-description">
+                                                    <span class="product-description-name order-summary-emphasis"><?= $p->getName() ?></span>
+                                                </td>
+                                                <td class="product-quantity visually-hidden"><?= $porder->getQuantity() ?></td>
+                                                <td class="product-price">
+                                                <span class="order-summary-emphasis">
+                                                    <?php
+                                                    if ($moneyDiscount) {
+                                                        echo number_format($moneyDiscount) . $priced;
+                                                    } else if (empty($p->getPrice()) || $p->getPrice() <= 0 || $p->getContactPrice()) {
+                                                        echo $this->template()->loadValue('PRICE_CONTACT');
+                                                    } else {
+                                                        echo number_format($p->getPrice()) . $priced;
+                                                    }
+                                                    ?>
+                                                </span>
+                                                </td>
+                                            </tr>
+                                            <?php
+                                        }
+                                    }
+                                    ?>
+                                    </tbody>
+                                </table>
+                                    <div class="order-prod-line order-prod-subshipFee">
+                                        <p class="total-line-name"><?= $this->translate('HÌNH THỨC THANH TOÁN') ?>:</p>
+                                        <p class="total-line-name"><?= $this->translate('CHƯA CẬP NHẬT') ?></p>
+                                    </div>
+                                    <div class="order-prod-line order-prod-subshipFee">
+                                        <p class="total-line-name"><?= $this->translate('ƯU ĐÃI') ?>:</p>
+                                        <p class="total-line-name"><?= $this->translate('CHƯA CẬP NHẬT') ?></p>
+                                    </div>
+                                </div>
+                            </section>
+                            <div class="total-line-table-footer total-text order-prod-line">
+                                    <p class="total-line-name payment-due-label"><?= $this->translate('TỔNG TIỀN') ?></p>
+                                    <p class="total-line-name payment-due"><?=number_format($money - $moneyUsedPoints) .$priced?></p>
+                            </div>
+                            <div class="step-footer">
+                                <div class="form-buttom">
+                                    <div id="form_contact">
+                                        <button type="submit" class="step-footer-continue-btn btn-lh tp_button">
+                                            <a href="lien-he" class="btn-content"><?= $this->translate('LIÊN HỆ') ?></a>
+                                            <i class="btn-spinner icon icon-button-spinner"></i>
+                                        </button>
+                                    </div>
+                                    <div id="form_home_step">
+                                        <button class="btn-home tp_button btn-success">
+                                            <a href="/" class="btn-content-home"><?= $this->translate('VỀ TRANG CHỦ') ?></a>
+                                            <i class="btn-spinner icon icon-button-spinner"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </article>
+                </div>
+            </main>
+        </div>
+    </form>
+</div>
+</body>
+</html>
+<style>
+    html, body {
+        width: 100%;
+    }
+    .main-body {
+        background-attachment: fixed;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+        position: relative;
+        overflow: hidden;
+    }
+
+    body {
+        color: #737373;
+        /*background: #fff;*/
+        font-size: 14px;
+        font-family: Helvetica Neue, sans-serif;
+        line-height: 1.42857143em;
+        overflow-wrap: break-word;
+        overflow-x: hidden;
+        word-wrap: break-word;
+        word-break: break-word;
+        padding: 0;
+        margin: 0;
+    }
+
+    body .content {
+        color: #46484a;
+    }
+    .btn-content {
+        color: #000;
+    }
+    .btn-content-home {
+        color: #ffffff;
+    }
+    .btn-home {
+        display: inline-block;
+        font-weight: 500;
+        padding: 0.6em 10.3em;
+        box-sizing: border-box;
+        text-align: center;
+        cursor: pointer;
+        transition: background-color .2s ease-in-out,color .2s ease-in-out;
+        position: relative;
+        background: #000;
+        color: #fff;
+        border-radius: unset;
+    }
+    .total-text {
+        font-weight: 600;
+    }
+
+    .content {
+        overflow: hidden;
+    }
+
+    form {
+        margin: 0;
+        padding: 0;
+    }
+
+    body, .content, .content .wrap, .main, .main__content, .step, .content > form {
+        display: flex;
+        flex: 1 0 auto;
+        flex-direction: column;
+    }
+
+    @media (min-width: 1000px) {
+        body .content {
+            height: 100vh;
+        }
+
+        body .content .wrap {
+            flex-direction: row !important;
+        }
+
+        body form .wrap {
+            padding: 0 2em;
+            max-width: 95em;
+        }
+
+        body .main {
+            width: 52%;
+            padding: 2em 2em 0 2em;
+        }
+
+        body .main--nosidebar .main__header {
+            padding-bottom: 1.5em;
+        }
+
+        body .main .logo {
+            display: block;
+        }
+
+        body .logo--left {
+            text-align: left;
+        }
+
+        body .col--primary {
+            width: 50%;
+        }
+
+        body .col {
+            padding-left: 1em;
+            padding-right: 1em;
+            padding-top: 0;
+        }
+
+
+        body .section--icon-heading {
+            text-align: inherit;
+            display: flex;
+            align-items: center;
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        body .section__icon {
+            margin-right: 1rem;
+        }
+
+        .thankyou-message-container {
+            margin-top: 30px;
+        }
+
+        .main__content .col--secondary {
+            width: 50%;
+        }
+
+        body .hide-on-desktop {
+            display: none !important;
+        }
+
+        body .order-summary__sections {
+            display: flex;
+            flex-direction: column;
+        }
+
+        body .order-summary__section--is-scrollable {
+            overflow-y: auto;
+            max-height: calc(100vh - 480px);
+        }
+
+        body .row {
+            margin-left: -10px;
+            margin-right: -10px;
+        }
+
+        body .col--md-two {
+            padding-top: 0;
+            width: 50%;
+        }
+
+    }
+
+    .content .wrap {
+        flex-direction: column-reverse;
+    }
+
+    /*@media (min-width: 768px) {*/
+    /*    body .wrap--mobile-fluid {*/
+    /*        max-width: 50em;*/
+    /*    }*/
+    /*}*/
+
+    /*.content .wrap--mobile-fluid {*/
+    /*    max-width: 100%;*/
+    /*    padding: 0;*/
+    /*}*/
+    .total-line td {
+        padding-top: 0.75em;
+    }
+
+    td:first-child, th:first-child {
+        padding-left: 0;
+        text-align: left;
+    }
+
+    td:last-child, th:last-child {
+        text-align: right;
+    }
+
+    .sidebar .sidebar-content .order-summary .order-summary-emphasis {
+        font-weight: 500;
+        color: #4b4b4b;
+    }
+
+    td, th {
+        padding: 0;
+        padding-left: 1em;
+    }
+
+    td, th {
+        padding: 0;
+    }
+
+    #order-summary {
+        padding: 30px;
+    }
+
+    .wrap {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0 1em;
+        font-size: 14px;
+        max-width: 40em;
+        margin: 0;
+    }
+
+    .wrap:after, .wrap:before {
+        content: "";
+        display: table;
+    }
+
+    .wrap:after {
+        clear: both;
+    }
+
+    .main--nosidebar {
+        padding-top: 0;
+    }
+
+    .main {
+        width: 100%;
+        padding-top: 1.5em;
+    }
+
+    .main--nosidebar .main__header {
+        padding-bottom: 0;
+    }
+
+    .main__header {
+        padding-bottom: 1.5em;
+    }
+
+    .main .logo {
+        display: none;
+    }
+
+    .shop__logo {
+        text-align: center;
+    }
+
+    a, .icon-print {
+        color: #2a9dcc;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .main__content {
+        padding-bottom: 1.5em;
+    }
+
+    .row:first-child > .col:first-child {
+        padding-top: 0;
+    }
+
+    .col {
+        float: left;
+        width: 100%;
+        box-sizing: border-box;
+        padding-top: 2em;
+    }
+
+    .section:first-child {
+        padding-top: 0;
+    }
+
+
+    .section__text__header {
+        color: #318d31;
+        padding: 30px 0 30px;
+        border-bottom: 1.5px #000 solid;
+    }
+
+    .section__text__footer {
+        text-align: center;
+    }
+
+    .section__title, .modal__title, .sidebar__title, .order-summary-toggle__text {
+        color: #333;
+        font-weight: 600;
+        font-size: 1.15rem;
+    }
+
+    .col--secondary {
+        float: right;
+    }
+
+    .order-summary--bordered {
+        border: 1px solid #e1e1e1;
+        background: #fff;
+    }
+
+    .order-summary__title {
+        font-weight: 600;
+        font-size: 20px;
+        padding: 15px 0 15px;
+        border-bottom: 1.5px solid #000;
+    }
+
+    .order-summary__header {
+        text-align: center;
+
+    }
+
+    .information {
+        padding: 12px 0 12px;
+        border-bottom: 1.5px solid #000;
+    }
+
+    a, .icon-print {
+        color: #2a9dcc;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .order-summary--bordered .order-summary__section--product-list {
+        border-top: 1px solid #e1e1e1;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+
+    .order-summary--bordered .order-summary__section {
+        padding: 7px 15px;
+    }
+
+    table {
+        border-collapse: collapse;
+        border-spacing: 0;
+        font-size: 1em;
+        width: 100%;
+        margin: 0;
+    }
+
+    .order-summary--bordered .order-summary__section--product-list tbody tr:last-child td, .order-summary--bordered .order-summary__section--product-list tbody tr:last-child th {
+        border-bottom: none;
+    }
+
+    .order-summary--bordered .order-summary__section--product-list tbody td, .order-summary--bordered .order-summary__section--product-list tbody th {
+        border-bottom: 1px solid #e6e6e6;
+        padding-top: 1em;
+        padding-bottom: 1em;
+    }
+
+    .product-table td:first-child, .stock-table td:first-child {
+        padding-left: 0;
+    }
+
+    .product-table tbody th, .stock-table tbody th {
+        padding-left: 1em;
+        font-weight: 500;
+        color: #333;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+
+    .product__description {
+        text-align: left;
+        width: 100%;
+    }
+
+    td:first-child, th:first-child {
+        padding-left: 0;
+        text-align: left;
+    }
+
+    td:last-child, th:last-child {
+        text-align: right;
+    }
+    .product-table td, .stock-table td {
+        padding-left: 1em;
+    }
+
+    td, th {
+        font-weight: normal;
+    }
+
+    .product td {
+        padding-top: 1em;
+    }
+    .order-summary__section ~ .order-summary__section {
+        border-top: 1px solid rgba(175, 175, 175, .34);
+    }
+
+    .total-line th, .total-line td {
+        padding-top: 0.75em;
+    }
+    .thankyou-page .order-summary {
+        background-color: #fafafa;
+    }
+
+
+    h2 {
+        color: #333;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        margin: 0;
+        font-weight: normal;
+    }
+
+    .row::after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+    a, .icon-print {
+        color: #2a9dcc;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .text-icon-group--large .fa {
+        font-size: 1.8rem;
+    }
+
+    .text-icon-group--large .fa {
+        font-size: 1.8rem;
+    }
+
+    .total-line-text {
+        display: flex;
+        justify-content: space-between;
+        padding-bottom: 10px;
+        border-bottom: 1.5px #000 solid;
+    }
+    .order-prod-line {
+        display: flex;
+        justify-content: space-between;
+    }
+    .section-prod {
+        padding-bottom: 10px;
+        border-bottom: 1.5px #000 solid;
+    }
+    .total-line-table-footer {
+        padding-top: 10px;
+    }
+
+
+</style>
+
+

@@ -1,0 +1,192 @@
+<?php
+$userService = $this->user();
+$user = null;
+if($userService->hasIdentity()){
+    $user = $userService->getUser();
+}
+?>
+
+<div class="site-nav-container-last">
+    <!--<p class="title">Menu</p>-->
+    <div class="main-navbar">
+        <nav class="primary-menu">
+            <ul class="menu-collection">
+                <?php
+                if ($this->template()->menuIsExisted(['position' => \Website\Model\Menu::POSITION_HEADER])) {
+                    $menus = $this->template()->getMenus(\Website\Model\Menu::POSITION_HEADER);
+                    if ($menus) {
+                        /* @var $m \Website\Model\Menu */
+                        foreach ($menus as $m) {
+                            if (in_array($m->getType(), $m->getTypeCates())) {
+                                $categories = $this->template()->getCategoryTypeMenu($m->getType());
+                                if ($categories) {
+                                    foreach ($categories as $c) { ?>
+                                        <li class="navi1 <?= $c->getChilds() ? 'has-sub level0' : '' ?>">
+                                            <a href="<?= $c->getViewLink() ?>" title="<?= $c->getName() ?>">
+                                                <span><?= $c->getName() ?></span>
+                                            </a>
+                                            <?php
+                                            if ($c->getChilds()) { ?>
+                                                <span class="icon-subnav"><i class="far fa-angle-down"></i></span>
+                                                <ul class="submenu subnav-children">
+                                                    <?php foreach ($c->getChilds() as $c2) { ?>
+                                                        <li class="navi2 <?= $c2->getChilds() ? 'has-sub level1' : '' ?>">
+                                                            <a href="<?= $c2->getViewLink() ?>"  title="<?= $c2->getName() ?>">
+                                                                <?= $c2->getName() ?>
+                                                            </a>
+                                                            <?php
+                                                            if ($c2->getChilds()) { ?><i class="far fa-angle-down"></i><i class="fa fa-angle-down"></i></span>
+                                                                <ul class="submenu subnav-child">
+                                                                    <?php
+                                                                    foreach ($c2->getChilds() as $c3) { ?>
+                                                                        <li>
+                                                                            <a href="<?= $c3->getViewLink() ?>"><?= $c3->getName() ?></a>
+                                                                        </li>
+                                                                    <?php }?>
+                                                                </ul>
+                                                            <?php } ?>
+                                                        </li>
+                                                        <?php
+                                                    }
+                                                    ?>
+                                                </ul>
+                                                <?php
+                                            } ?>
+                                        </li>
+                                        <?php
+                                    }
+                                }
+                            } else { ?>
+                                <li class="navi1 <?= $m->getChilds() ? 'has-sub level0' : '' ?>">
+                                    <a href="<?= $m->getViewLink() ?>" title="<?= $m->getName() ?>">
+                                        <span><?= $m->getName() ?></span>
+                                    </a>
+                                    <?php
+                                    if ($m->getChilds()) { ?>
+                                        <span class="icon-subnav"><i class="far fa-angle-down"></i></span>
+                                        <ul class="submenu subnav-children">
+                                            <?php
+                                            foreach ($m->getChilds() as $m2) {
+                                                $categories = $this->template()->getCategoryTypeMenu($m2->getType());
+                                                if (in_array($m2->getType(), $m2->getTypeCates())) {
+                                                    /** @var  $c \Product\Model\Category */
+                                                    foreach ($categories as $c) { ?>
+                                                        <li class="navi2 <?= $c->getChilds() ? 'has-sub level1' : '' ?>">
+                                                            <a href="<?= $c->getViewLink() ?>" title="<?= $c->getName() ?>"><?= $c->getName() ?></a>
+                                                            <?php
+                                                            if ($c->getChilds()) { ?>
+                                                                <span class="icon-subnav"><i class="far fa-angle-down"></i></span>
+                                                                <ul class="submenu subnav-child">
+                                                                    <?php
+                                                                    /** @var  $c1 \Product\Model\Category */
+                                                                    foreach ($c->getChilds() as $c1) { ?>
+                                                                        <li>
+                                                                            <a href="<?= $c1->getViewLink() ?>"><?= $c1->getName() ?></a>
+                                                                        </li>
+                                                                    <?php }?>
+                                                                </ul>
+                                                            <?php } ?>
+                                                        </li>
+                                                        <?php
+                                                    }
+                                                } else { ?>
+                                                    <li class="navi2 <?= $m2->getChilds() ? 'has-sub level1' : '' ?>">
+                                                        <a href="<?= $m2->getViewLink() ?>" title="<?= $m2->getName() ?>">
+                                                            <?= $m2->getName() ?>
+                                                        </a>
+                                                        <?php
+                                                        if ($m2->getChilds()) { ?>
+                                                            <span class="icon-subnav"><i class="far fa-angle-down"></i></span>
+                                                            <ul class="submenu subnav-child">
+                                                                <?php foreach ($m2->getChilds() as $m3) { ?>
+                                                                    <li><a href="<?= $m3->getViewLink() ?>"><?= $m3->getName() ?></a></li>
+                                                                <?php } ?>
+                                                            </ul>
+                                                        <?php } ?>
+                                                    </li>
+                                                    <?php
+                                                }
+                                            }
+                                            ?>
+                                        </ul>
+                                        <?php
+                                    }
+                                    ?>
+                                </li>
+                                <?php
+                            }
+                        }
+                    }
+                } else {
+                    $categories = $this->productCategory()->getCategories();
+                    if ($categories) {
+                        foreach ($categories as $c) { ?>
+                            <li class="navi1 <?= $c->getChilds() ? 'has-sub level0' : '' ?>">
+                                <a href="<?= $c->getViewLink() ?>" title="<?= $c->getName() ?>">
+                                    <span><?= $c->getName() ?></span>
+                                </a>
+                                <?php
+                                if ($c->getChilds()) { ?>
+                                    <span class="icon-subnav"><i class="far fa-angle-down"></i></span>
+                                    <ul class="submenu subnav-children">
+                                        <?php
+                                        foreach ($c->getChilds() as $c2) { ?>
+                                            <li class="navi2 <?= $c2->getChilds() ? 'has-sub level1' : '' ?>">
+                                                <a href="<?= $c2->getViewLink() ?>" title="<?= $c2->getName() ?>">
+                                                    <?= $c2->getName() ?>
+                                                </a>
+                                                <?php
+                                                if ($c2->getChilds()) { ?>
+                                                    <span class="icon-subnav"><i class="far fa-angle-down"></i></span>
+                                                    <ul class="submenu subnav-child">
+                                                        <?php
+                                                        foreach ($c2->getChilds() as $c3) { ?>
+                                                            <li>
+                                                                <a href="<?= $c3->getViewLink() ?>"><?= $c3->getName() ?></a>
+                                                            </li>
+                                                        <?php }?>
+                                                    </ul>
+                                                <?php } ?>
+                                            </li>
+                                            <?php
+                                        } ?>
+                                    </ul>
+                                <?php } ?>
+                            </li>
+                            <?php
+                        }
+                    }
+                }
+                ?>
+            </ul>
+            <ul class="menu-about">
+                <?php
+                if ($user) { ?>
+                    <li>
+                        <a href="/profile">
+                            <span><?= $user->getFullName() ? $user->getFullName() : '' ?></span>
+                        </a>
+                    </li>
+                <?php }else{ ?>
+                    <li>
+                        <a href="/user/signin">
+                            <span>
+                                  <?php
+                                  if ($user) { ?>
+                                      <a  href="/profile"><i class="fal fa-user-alt"></i><span><?= (isset($user) && $user) ? $user->getFullName() : $this->translate('Đang cập nhật') ?></span></a>
+                                  <?php } else { ?>
+                                      <a  href="/user/signin"><i class="fal fa-user-alt"></i>Đăng Nhập</a>
+                                  <?php } ?>
+                            </span>
+                        </a>
+                    </li>
+                <?php } ?>
+            </ul>
+        </nav>
+    </div>
+    <div class="to-bottom-content">
+        <div class="site-copyright">
+            <p class="copy">Copyright © 2022 <a href="/"><?= $this->template()->loadValue('META_TITLE') ?></a></p>
+        </div>
+    </div>
+</div>

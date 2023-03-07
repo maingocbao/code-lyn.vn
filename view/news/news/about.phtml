@@ -1,0 +1,161 @@
+<?php
+$this->headTitle('Về chúng tôi');
+$this->headMeta()->appendName('description', 'Về chúng tôi');
+$this->headMeta()->appendName('keywords', 'Về chúng tôi');
+$this->headMeta()->appendProperty('og:title', 'Về chúng tôi');
+$this->headMeta()->appendProperty('og:type', 'contacts');
+$bnBannerContract = $this->store()->getBannerByPositionCode('BANNER_CONTRACT_TOP');
+$bnBannerContractCenter = $this->store()->getBannerByPositionCode('BANNER_CONTRACT_CENTER');
+$bnBannerContractBottom = $this->store()->getCurrentBannerByCode('BANNER_CONTRACT_BOTTOM', ['limit' => 1]);
+?>
+<main>
+    <section class="main-text-slick">
+        <div class="header-main-slick">
+            <div class="slider single-item">
+                <div>
+                    <h3><?= $this->template()->loadValue('COLLECTION_HEADING_CONTENT1') ?></h3>
+                </div>
+
+                <div>
+                    <h3><?= $this->template()->loadValue('COLLECTION_HEADING_CONTENT2') ?></h3>
+                </div>
+
+                <div>
+                    <h3><?= $this->template()->loadValue('COLLECTION_HEADING_CONTENT3') ?></h3>
+                </div>
+
+                <div>
+                    <h3><?= $this->template()->loadValue('COLLECTION_HEADING_CONTENT4') ?></h3>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div id="MainContent">
+        <div id="shopify-section-about-page" class="shopify-section">
+            <div class="about-page">
+                <?php
+                if ($bnBannerContract) {
+                    foreach ($bnBannerContract as $b1) {
+                        ?>
+                        <div class="grid grid--no-gutters about-page--half-right about-page__banner">
+                            <div class="grid__item small-one--whole medium-up--one-half">
+                                <div class="about-page__image">
+                                    <img class="grid-view-item__image small--hide " src="<?= $b1->getImageSrc() ?>"
+                                         alt="<?= $b1->getName() ?>">
+                                </div>
+                            </div>
+                            <div class="grid__item small-one--whole medium-up--one-half">
+                                <div class="about-page__content">
+                                    <div class="about-page__content-inner">
+                                        <h1><?= $b1->getDescription() ?></h1>
+                                        <div class="rte">
+                                            <p><?= $b1->getIntro() ?></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <?php
+                    }
+                }
+                    ?>
+
+
+
+                <?php
+                if ($bnBannerContractCenter) {
+                    foreach ($bnBannerContractCenter as $b2) {
+                        ?>
+                        <div class="grid grid--no-gutters about-page--half-left about-page__banner">
+
+                            <div class="grid__item small-one--whole medium-up--one-half">
+                                <div class="about-page__image">
+                                    <img class="grid-view-item__image medium-up--hide" src="<?= $b2->getImageSrc() ?>"
+                                         alt="<?= $b2->getName() ?>">
+                                </div>
+                            </div>
+
+                            <div class="grid__item small-one--whole medium-up--one-half">
+                                <div class="about-page__content">
+                                    <div class="about-page__content-inner">
+                                        <h2><?= $b2->getDescription() ?></h2>
+                                        <div class="rte">
+                                            <p><?= $b2->getIntro() ?></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <?php
+                    }
+                }
+                    ?>
+
+                <div class="grid grid--no-gutters about-page__get-touch">
+                    <div class="grid__item small-one--whole medium-up--one-half about-page__get-and-map">
+                        <div class="about-page__get-touch-content">
+                            <h1 data-gtm-vis-has-fired-7603973_1431="1">Get in touch</h1>
+                            <p>For media and press enquiries please email:
+                                <a class="classic-link" href="mailto:press@gymshark.com" target="_blank">press@gymshark.com</a>
+                            </p>
+
+                            <p>For general business enquiries please email:
+                                <a class="classic-link" href="mailto:corporate@gymshark.com" target="_blank">corporate@gymshark.com</a>
+                            </p>
+                            <p>For all customer service enquiries please click here:
+                                <a class="classic-link" href="/contact" target="_blank">www.gymshark.com/contact</a>
+                            </p>
+                        </div>
+                        <div class="about-page__map">
+
+                            <div class="about-page__map-content">
+                                <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d3724.5980358717275!2d105.81808241533197!3d21.008744093836278!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1svi!2s!4v1660545562181!5m2!1svi!2s"
+                                        width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"
+                                        referrerpolicy="no-referrer-when-downgrade"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid__item small-one--whole medium-up--one-half about-page__follow">
+                        <?php
+                        if ($bnBannerContractBottom) {
+                        foreach ($bnBannerContractBottom as $b3) {
+                        ?>
+                        <div class="about-page__follow-image">
+                            <img class="grid-view-item__image"
+                                 src="<?= $b3->getImageSrc() ?>"
+                                 alt="<?= $b3->getName() ?>" >
+                        </div>
+                        <?php }} ?>
+                        <div class="about-page__follow-content">
+                            <h1 data-gtm-vis-has-fired-7603973_1431="1">Follow Us</h1>
+                            <div class="social-links">
+                                <a>
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                                <a>
+                                    <i class="fab fa-facebook"></i>
+                                </a>
+                                <a>
+                                    <i class="fab fa-twitter-square"></i>
+                                </a>
+                                <a>
+                                    <i class="fab fa-pinterest"></i>
+                                </a>
+                                <a>
+                                    <i class="fab fa-spotify"></i>
+                                </a>
+                                <a>
+                                    <i class="fab fa-youtube"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</main>
+

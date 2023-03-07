@@ -1,0 +1,208 @@
+<?php
+$storeId = $GLOBALS['domainConfigs']['storeId'];
+
+$p = $this->product;
+/* @var $p \Product\Model\Store */
+if (!$p = $this->product) {
+    echo '<p>Không tìm thấy sản phẩm yêu cầu</p>';
+    return;
+}
+$ivt = $p->getInventory() ? $p->getInventory()->calcAvailable() : 0;
+$priceDiscount = $p->getPriceAfterDiscount();
+$this->headScript()->appendFile($this->libs()->srcLink([
+    '/tp/T0367/js/quickview.js',
+    '/tp/T0367/js/pview.js',
+], 10)
+);
+
+$priced = ' ₫';
+?>
+<div id="quick-view-product">
+    <div class="modal-lg">
+        <div class="row">
+            <div class="col-lg-6 col-md-6">
+                <div class="image-zoom">
+                    <div class="p-imgfeature">
+                        <img class="p-product-image-feature" alt="<?= $p->getName() ?>" src="<?= $p->getImageUri() ?>">
+                    </div>
+                    <div id="p-sliderproduct" class="owl_pages">
+                        <ul class="slides">
+                            <?php
+                            if (is_array($allImages = $p->collectAllImages(2)) && count($allImages) > 1) {
+                                foreach ($allImages as $thumbUri => $srcUri) {
+                                    echo '<li class="item product-thumb" data-target="0" data-item="' . $srcUri . '"><a href="javascript:void(0);" data-image="' . $thumbUri . '"><img alt="' . $p->getName() . '" src="' . $thumbUri . '"></a></li>';
+                                }
+                            } else {
+                                echo '<li class="item product-thumb" data-target="0" data-item="' . $p->getThumbnailUri() . '"><a href="javascript:void(0);" data-image="' . $p->getThumbnailUri() . '"><img alt="' . $p->getName() . '" src="' . $p->getThumbnailUri() . '"></a></li>';
+                            }
+                            ?>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6" id="q-detail-product">
+                <div class="form-input head">
+                    <div class="product-title" style="padding-bottom: 10px">
+                        <h3 class="tp_product_name"><?= $p->getName() ?></h3>
+                        <span id="q-pro_sku"><strong><?= $this->translate('Mã sản phẩm') ?> : </strong> <?= $p->getCode() ?></span>
+
+                    </div>
+                    <div class="product-price" id="q-price-preview">
+                        <?php
+                        $condition = $priceDiscount;
+
+                        if ($condition > 0) {
+                            echo '<span class="pro-price tp_product_price">' . number_format($priceDiscount) . $priced . '</span>';
+                        } else if (empty($p->getPrice()) || $p->getPrice() <= 0 || $p->getContactPrice()) {
+                            $link = 'javascript:';
+                            $taget = '';
+                            if (!empty($this->template()->loadValue('CUSTOM_LINK' && in_array($storeId, [64529])))) {
+                                $taget = 'target="_blank"';
+                                $link = $this->template()->loadValue('CUSTOM_LINK');
+                            }
+                            echo '<a href="' . $link . '" ' . $taget . '><span class="tp_product_price">' . $this->template()->loadValue('PRICE_CONTACT') . '</span></a>';
+                        } else {
+                            echo '<span class="pro-price tp_product_price">' . number_format($p->getPrice()) . $priced . '</span>';
+                        }
+                        ?>
+                    </div>
+                </div>
+                <div class="select-swatch clearfix">
+                    <?php
+                    $variableAttributes = $p->getVariableAttributes();
+                    $flag = 0;
+                    if (isset($variableAttributes['color'])) {
+                        /* @var $color \Product\Model\Attribute */
+                        $color = $variableAttributes['color'];
+                        $values = $color->getChildValues();
+                        if ($numbCl = is_array($values) ? count($values) : 0) {
+                            $flag++;
+                            ?>
+                            <div id="q-variant-swatch-0" class="swatch color clearfix">
+                                <div class="header hide tp_title"><?= $this->translate('Màu sắc') ?>:</div>
+                                <div class="select-swap color req scroll" data-column="<?= $color->getColumn() ?>">
+                                    <?php
+                                    foreach ($values as $attrValue) {
+                                        /* @var $attrValue \Product\Model\AttributeValue */
+                                        $img = $p->getAttrValueImage([$color->getColumn() => $attrValue->getId()], false, ['return' => 'image']);
+                                        $img = $img ?: $p->getThumbnailUri();
+                                        $pIdsAttrJson = json_encode($p->getAttrValueImage([$color->getColumn() => $attrValue->getId()], true));
+                                        $pIdsAttrStr = str_replace(']', '', str_replace('[', '', $pIdsAttrJson));
+                                        ?>
+                                        <div data-value="<?= $attrValue->getName() ?>"
+                                             class="n-sd swatch-element color">
+                                            <?php
+                                            echo '<a data-pIds="' . $pIdsAttrStr . '" rel="nofollow" href="javascript:" data-cloudzoom="useZoom: \'.cloudzoom\', image: \'' . $img . '\', zoomImage: \'' . $img . '\'"
+                                                                    class="cloudzoom-gallery ' . (($numbCl == 1) ? 'active' : '') . '"
+                                                                    value="' . $attrValue->getId() . '" title="' . $attrValue->getName() . '"
+                                                                    data-src="' . $img . '" data-selId=""><img src="' . $img . '" alt="" /></a>';
+                                            ?>
+                                        </div>
+                                        <?php
+                                    }
+                                    ?>
+                                </div>
+                            </div>
+                            <?php
+                        }
+                    }
+                    if (isset($variableAttributes['size'])) {
+                        /* @var $size \Product\Model\Attribute */
+                        $size = $variableAttributes['size'];
+                        $values = $size->getChildValues();
+                        if ($numbS = is_array($values) ? count($values) : 0) {
+                            $flag++;
+                            ?>
+                            <div id="q-variant-swatch-1" class="swatch clearfix">
+                                <div class="header tp_title"><?= $this->translate('Kích thước') ?>:</div>
+                                <div class="select-swap size req" data-column="<?= $size->getColumn() ?>">
+                                    <?php
+                                    foreach ($values as $attrValue) {
+                                        /* @var $attrValue \Product\Model\AttributeValue */
+                                        echo ' <div  class="n-sd swatch-element"><a rel="nofollow" value="' . $attrValue->getId() . '" href="javascript:void(0)" class="' . (($numbS == 1) ? 'active' : '') . '"><span>' . $attrValue->getName() . '</span></a></div>';
+                                    }
+                                    ?>
+                                </div>
+                            </div>
+                            <?php
+                        }
+                    }
+                    ?>
+
+                </div>
+                <?php
+                if ($p->getDescription()) {
+                    ?>
+                    <div class="product-description">
+                        <div class="title-bl">
+                            <h2 class="tp_title"><?php $this->translate('Mô tả') ?></h2>
+                        </div>
+                        <div class="description-content">
+                            <div class="description-productdetail">
+                                <?= $p->getDescription() ?>
+                            </div>
+                        </div>
+                    </div>
+                    <?php
+                }
+                ?>
+                <div class="selector-actions">
+                    <div class="quantity-area clearfix">
+                        <input data-id="<?= $p->getId() ?>" type="button" value="-"
+                               class="qty-btn minus btn-minus-view">
+                        <input data-id="<?= $p->getId() ?>" type="text" id="quantity" name="qty"
+                               value="1" min="1" max="<?= $ivt ?>" class="quantity-selector qty-view">
+                        <input data-id="<?= $p->getId() ?>" type="button" value="+"
+                               class="qty-btn plus btn-plus-view">
+                    </div>
+                    <?php
+                    if ($flag)
+                        echo '<button id="addToCart" class="btn-addcart btn buy unsel tp_button btn-cart-header" data-psid="' . $p->getId() . '" data-selId="' . $p->getId() . '" title="' . $this->translate('Vui lòng chọn màu sắc hoặc kích cỡ!') . '" data-ck="0">' . $this->translate('THÊM VÀO GIỎ') . '</button>';
+                    else
+                        echo '<button id="addToCart" class="btn-addcart btn buy tp_button btn-cart-header" data-psid="' . $p->getId() . '" data-selId="' . $p->getId() . '" data-ck="1">' . $this->translate('THÊM VÀO GIỎ') . '</button>';
+                    ?>
+
+                    <div class="qv-readmore">
+                        <span> <?= $this->translate('hoặc') ?> </span><a class="read-more p-url tp_title"
+                                                                         href="<?= $p->getViewLink() ?>"
+                                                                         role="button"> <?= $this->translate('Xem chi tiết') ?></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .fancybox-skin {
+        background: #fff;
+    }
+
+    .select-swap.color a:hover, .select-swap.color a.active {
+        border: solid 2px #f48c42;
+    }
+
+    #q-variant-swatch-1 .select-swap.size a:hover {
+        border: 1px solid #000;
+    }
+
+    #q-variant-swatch-1 .select-swap.size a.deactive {
+        opacity: 0.3;
+        pointer-events: none;
+        background: #eee;
+    }
+
+    #q-variant-swatch-1 .select-swap.size a.active {
+        background: #000;
+        color: #fff;
+    }
+
+    .swatch .swatch-element {
+        display: inline-block;
+        margin-right: 8px;
+        position: relative;
+        vertical-align: bottom;
+    }
+</style>
+
+
+

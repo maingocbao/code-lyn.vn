@@ -1,0 +1,601 @@
+<?php
+$storeId = $GLOBALS['domainConfigs']['storeId'];
+$this->layout('layout/layoutnull');
+$this->headTitle($this->translate("Thanh toán"));
+$this->headMeta()->appendName('keywords', $this->template()->loadValue('META_KEYWORDS'));
+$this->headMeta()->appendName('description', $this->template()->loadValue('META_DESCRIPTION'));
+$this->headMeta()->appendProperty('og:title', $this->template()->loadValue('META_TITLE'));
+$this->headMeta()->appendProperty('og:url', 'http://' . $_SERVER['HTTP_HOST']);
+$this->headMeta()->appendProperty('og:type', '');
+
+$this->headScript()->appendFile($this->libs()->srcLink([
+    '/js/jquery/jquery.validationEngine.js',
+    '/js/jquery/jquery.validationEngine-vi.js',
+    '/tp/T0367/js/order.js',
+], 1));
+$this->headLink()->appendStylesheet($this->libs()->srcLink([
+    '/css/JqueryUi.css',
+    '/css/validationEngine.jquery.css',
+], 1));
+$this->headLink([
+    'rel' => 'canonical',
+    'href' => getCurrentFullUrl(true) . "/cart/checkout"
+]);
+$products = $this->products;
+
+/* @var \Payment\Service\BaokimPayment $baokimPaymentService */
+$baokimPaymentService = $this->payment()->baokimPayment();
+
+$address = $user = null;
+$requiredEmail = "validate[required,custom[email]]";
+/* @var $user \User\Model\User */
+if ($this->user()->hasIdentity()) {
+    $user = $this->user()->getUser();
+} else if (isset($_COOKIE['cod'])) {
+    $user = new \User\Model\User();
+    $user->exchangeArray((array)json_decode($_COOKIE['cod']));
+}
+/* @var \Order\Service\Cart $cartService */
+$cartService = $this->cart()->getServiceCart();
+$totalCartMoney = $cartService->getTotalMoney();
+$priced = ' ₫';
+?>
+<div class="content">
+    <div class="container">
+        <div class="main-header">
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/"><?= $this->translate('Trang chủ') ?></a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="/cart"><?= $this->translate('Giỏ hàng') ?></a>
+                </li>
+                <li class="breadcrumb-item">
+                    <?= $this->translate('Thanh toán') ?>
+                </li>
+            </ul>
+        </div>
+        <form action="" method="post" id="formCheckOut">
+            <div class="sidebar">
+                <div class="sidebar-content">
+                    <div class="order-summary order-summary-is-collapsed">
+                        <h2 class="visually-hidden tp_title"><?= $this->translate('Thông tin đơn hàng') ?></h2>
+                        <div class="order-summary-sections">
+                            <div class="order-summary-section order-summary-section-product-list">
+                                <button class="order-summary-toggle order-summary-toggle-hide visible-sm visible-xs">
+                                    <div class="wrap">
+                                        <div class="order-summary-toggle-inner">
+                                            <div class="order-summary-toggle-icon-wrapper">
+                                                <svg width="20" height="19" xmlns="http://www.w3.org/2000/svg"
+                                                     class="order-summary-toggle-icon">
+                                                    <path d="M17.178 13.088H5.453c-.454 0-.91-.364-.91-.818L3.727 1.818H0V0h4.544c.455 0 .91.364.91.818l.09 1.272h13.45c.274 0 .547.09.73.364.18.182.27.454.18.727l-1.817 9.18c-.09.455-.455.728-.91.728zM6.27 11.27h10.09l1.454-7.362H5.634l.637 7.362zm.092 7.715c1.004 0 1.818-.813 1.818-1.817s-.814-1.818-1.818-1.818-1.818.814-1.818 1.818.814 1.817 1.818 1.817zm9.18 0c1.004 0 1.817-.813 1.817-1.817s-.814-1.818-1.818-1.818-1.818.814-1.818 1.818.814 1.817 1.818 1.817z"></path>
+                                                </svg>
+                                            </div>
+                                            <div class="order-summary-toggle-text order-summary-toggle-text-show">
+                                                <span>Hiển thị thông tin đơn hàng</span>
+                                                <svg width="11" height="6" xmlns="http://www.w3.org/2000/svg"
+                                                     class="order-summary-toggle-dropdown" fill="#000">
+                                                    <path d="M.504 1.813l4.358 3.845.496.438.496-.438 4.642-4.096L9.504.438 4.862 4.534h.992L1.496.69.504 1.812z"></path>
+                                                </svg>
+                                            </div>
+                                            <div class="order-summary-toggle-text order-summary-toggle-text-hide">
+                                                <span>Ẩn thông tin đơn hàng</span>
+                                                <svg width="11" height="7" xmlns="http://www.w3.org/2000/svg"
+                                                     class="order-summary-toggle-dropdown" fill="#000">
+                                                    <path d="M6.138.876L5.642.438l-.496.438L.504 4.972l.992 1.124L6.138 2l-.496.436 3.862 3.408.992-1.122L6.138.876z"></path>
+                                                </svg>
+                                            </div>
+                                            <div class="order-summary-toggle-total-recap"
+                                                 data-checkout-payment-due-target="32000000">
+                                                <span class="total-recap-final-price"><?= number_format($this->cart()->getServiceCart()->getTotalMoney()) ?>₫</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </button>
+                                <table class="product-table">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col"><span
+                                                    class="visually-hidden"><?= $this->translate('Hình ảnh') ?></span>
+                                        </th>
+                                        <th scope="col"><span
+                                                    class="visually-hidden"><?= $this->translate('Mô tả') ?></span></th>
+                                        <th scope="col"><span
+                                                    class="visually-hidden"><?= $this->translate('Số lượng') ?></span>
+                                        </th>
+                                        <th scope="col"><span
+                                                    class="visually-hidden"><?= $this->translate('Giá') ?></span></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <?php
+                                    $prodIds = [];
+                                    /** @var  $p \Product\Model\Store */
+                                    foreach ($products as $p) {
+                                        $moneyDiscount = $p->getPriceAfterDiscount($p->getQuantity());
+                                        $prodIds[] = $p->getId();
+                                        ?>
+                                        <tr class="product">
+                                            <td class="product-image">
+                                                <div class="product-thumbnail">
+                                                    <div class="product-thumbnail-wrapper">
+                                                        <img class="product-thumbnail-image" alt="<?= $p->getName() ?>"
+                                                             src="<?= $p->getThumbnailUri() ?>">
+                                                    </div>
+                                                    <span class="product-thumbnail-quantity"
+                                                          aria-hidden="true"><?= $p->getQuantity() ?></span>
+                                                </div>
+                                            </td>
+                                            <td class="product-description">
+                                                <span class="product-description-name order-summary-emphasis tp_product_name">
+                                                    <?= $p->getName() ?>
+                                                </span>
+                                            </td>
+                                            <td class="product-quantity visually-hidden"><?= $p->getQuantity() ?></td>
+                                            <td class="product-price">
+                                                <span class="order-summary-emphasis">
+                                                    <?php
+                                                    if ($moneyDiscount) {
+                                                        echo '<span class="tp_product_price">' . number_format($moneyDiscount) . $priced . '</span>';
+                                                    } else if (empty($p->getPrice()) || $p->getPrice() <= 0 || $p->getContactPrice()) {
+                                                        echo '<span class="tp_product_price">' . $this->template()->loadValue('PRICE_CONTACT') . '</span>';
+                                                    } else {
+                                                        echo '<span class="tp_product_price">' . number_format($p->getPrice()) . $priced . '</span>';
+                                                    }
+                                                    ?>
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <?php
+                                    }
+                                    ?>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="order-summary-section order-summary-section-discount">
+                                <div id="form_discount_add">
+                                    <div class="fieldset">
+                                        <div class="field  ">
+                                            <div id="txtCode" style="padding: 0 0 5px 0"></div>
+                                            <div class="field-input-btn-wrapper">
+                                                <div class="field-input-wrapper">
+                                                    <label class="field-label"><?= $this->translate('Mã giảm giá') ?></label>
+                                                    <input placeholder="<?= $this->translate('Mã giảm giá') ?>"
+                                                           class="field-input input-discount" name="couponCode"
+                                                           id="discount_code">
+                                                </div>
+                                                <button type="button" id="getCoupon"
+                                                        class="field-input-btn btn-discount btn-default btn-disabled tp_button">
+                                                    <span class="btn-content"><?= $this->translate('Sử dụng') ?></span>
+                                                    <i class="btn-spinner icon icon-button-spinner"></i>
+                                                </button>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="order-summary-section order-summary-section-total-lines">
+                                <table class="total-line-table">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col"><span
+                                                    class="visually-hidden"><?= $this->translate('Mô tả') ?></span></th>
+                                        <th scope="col"><span
+                                                    class="visually-hidden"><?= $this->translate('Giá') ?></span></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr class="total-line total-line-subtotal">
+                                        <td class="total-line-name"><?= $this->translate('TẠM TÍNH') ?></td>
+                                        <td class="total-line-price">
+                                            <span class="order-summary-emphasis">
+                                                <?php
+                                                if ($GLOBALS['domainConfigs']['domainShowPrice'] == \Website\Model\Domain::SHOW_PRICE_CONTACT) {
+                                                    echo 'Liên hệ';
+                                                } else {
+                                                    echo number_format($totalCartMoney) . $priced;
+                                                }
+                                                ?>
+                                            </span>
+                                        </td>
+                                    </tr>
+
+
+                                    <tr class="total-line total-line-shipping">
+                                        <td class="total-line-name"><?= $this->translate('ƯU ĐÃI') ?></td>
+                                        <td class="total-line-price">
+                                            <span class="order-summary-emphasis" id="ship_fee">0 đ</span>
+                                        </td>
+                                    </tr>
+                                    <!--                                    <tr class="total-line total-line-freeship"><td colspan="2"><p>Đơn hàng trên 300.000đ của bạn được miễn phí giao hàng !!</p></td></tr></tbody>-->
+
+                                    <tfoot class="total-line-table-footer">
+                                    <tr class="total-line">
+                                        <td class="total-line-name payment-due-label">
+                                            <span class="payment-due-label-total"><?= $this->translate('TỔNG TIỀN') ?></span>
+                                        </td>
+                                        <td class="total-line-name payment-due">
+                                            <span class="payment-due-currency">VND</span>
+                                            <span class="payment-due-price" id="showTotalMoney"
+                                                  value="<?= $this->cart()->getServiceCart()->getTotalMoney() ?>">
+                                                <?php
+                                                if ($GLOBALS['domainConfigs']['domainShowPrice'] == \Website\Model\Domain::SHOW_PRICE_CONTACT) {
+                                                    echo 'Liên hệ';
+                                                } else {
+                                                    echo number_format($totalCartMoney) . $priced;
+                                                }
+                                                ?>
+                                            </span>
+                                            <input type="hidden" id="getMn"
+                                                   value="<?= $this->cart()->getServiceCart()->getTotalMoney() ?>"/>
+                                        </td>
+                                    </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="main">
+                <div class="main-content">
+                    <div class="step">
+                        <div class="step-sections steps-onepage" step="1">
+                            <div class="section">
+
+                                <div class="section-content section-customer-information no-mb">
+                                    <div class="section-content section-customer-information no-mb">
+
+                                        <?php
+                                        if ($this->user()->hasIdentity()) {
+                                            $user = $this->user()->getUser();
+                                            ?>
+                                            <p class="section-content-text">
+                                                <?= $this->translate('Xin chào') ?>, <a
+                                                        href="/profile"><?= (isset($user) && $user) ? $user->getFullName() : '' ?></a>
+                                            </p>
+                                            <?php
+                                        } else {
+                                            ?>
+                                            <p class="section-content-text">
+                                                <?= $this->translate('Bạn đã có tài khoản') ?>?
+                                                <a href="/user/signin"><?= $this->translate('Đăng nhập') ?></a>
+                                            </p>
+                                            <?php
+                                        }
+                                        ?>
+                                        <div class="fieldset">
+                                            <?php
+                                            $className = 'field';
+                                            $classPhone = 'field field-required field-third';
+                                            ?>
+                                            <div class="<?= $className ?>">
+                                                <div class="field-input-wrapper">
+                                                    <label class="field-label"
+                                                           for="billing_address_full_name"><?= $this->translate('Họ và tên') ?></label>
+                                                    <input placeholder="<?= $this->translate('Họ và tên') ?>"
+                                                           type="text" name="customerName"
+                                                           class="validate[required] field-input"
+                                                           value="<?= $user ? $user->getFullName() : '' ?>">
+                                                </div>
+
+                                            </div>
+
+                                            <div class="field  field-two-thirds  ">
+                                                <div class="field-input-wrapper">
+                                                    <label class="field-label" for="checkout_user_email">Email</label>
+                                                    <input placeholder="Email" type="text" name="customerEmail"
+                                                           class="field-input <?= $requiredEmail ?>"
+                                                           value="<?= $user ? $user->getEmail() : '' ?>">
+                                                </div>
+                                            </div>
+
+                                            <div class="<?= $classPhone ?>" style="padding-bottom: 15px;">
+                                                <div class="field-input-wrapper">
+                                                    <label class="field-label"
+                                                           for="billing_address_phone"><?= $this->translate('Số điện thoại') ?></label>
+                                                    <input placeholder="<?= $this->translate('Số điện thoại') ?>"
+                                                           type="text" name="customerMobile"
+                                                           class="validate[required,custom[phone]] field-input customerPointCheck"
+                                                           value="<?= $user ? str_replace('+84', '0', $user->getMobile()) : '' ?>">
+                                                </div>
+
+                                            </div>
+                                            <div class="section-middle" style="margin: 0px 0 15px 7px;">
+                                                <h2 class="section-title-middle tp_title"><?= $this->translate('Địa chỉ nhận hàng') ?></h2>
+                                            </div>
+
+                                            <div class="field">
+                                                <div class="field-input-wrapper">
+                                                    <label class="field-label"
+                                                           for="billing_address_address1"><?= $this->translate('Địa chỉ') ?></label>
+                                                    <input placeholder="<?= $this->translate('Địa chỉ') ?>" type="text"
+                                                           name="customerAddress" class="validate[required] field-input"
+                                                           id="billing_address_address1"
+                                                           value="<?= $user ? $user->getAddress() : '' ?>">
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="section-content">
+                                        <div class="fieldset">
+                                            <div id="form_update_location" class="clearfix">
+
+                                                <div class="field field-show-floating-label  field-half ">
+                                                    <div class="field-input-wrapper field-input-wrapper-select">
+                                                        <label class="field-label"
+                                                               for="customer_shipping_province"> <?= $this->translate('Tỉnh/ Thành phố') ?>  </label>
+                                                        <select id="customcityId" name="customerCityId"
+                                                                class="validate[required] field-input">
+                                                            <option data-code="null" value="null"
+                                                                    selected=""><?= $this->translate('Chọn Tỉnh/ thành phố') ?></option>
+                                                            <?php
+                                                            foreach ($this->cities as $city) { ?>
+                                                                <option <?= ($user && $user->getCityLocationId() == $city->getId() ? 'selected' : '') ?>
+                                                                        value='<?= $city->getId(); ?>'><?= $city->getNativeName() ?></option>
+                                                                <?php
+                                                            } ?>
+                                                        </select>
+                                                    </div>
+
+                                                </div>
+
+                                                <div class="field field-show-floating-label  field-half ">
+                                                    <div class="field-input-wrapper field-input-wrapper-select">
+                                                        <label class="field-label"
+                                                               for="customer_shipping_district"><?= $this->translate('Quận/ Huyện') ?></label>
+                                                        <select id="customdistrictId" name="customerDistrictId"
+                                                                class="validate[required] field-input">
+                                                            <option value=""
+                                                                    selected=""><?= $this->translate('Chọn Quận/ Huyện') ?></option>
+                                                            <?php
+                                                            if ($user) {
+                                                                $dts = $this->address()->loadDistrict($user->getCityLocationId());
+                                                                echo $this->address()->toSelectBox($dts, $user->getDistrictLocationId());
+                                                            } ?>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="field field-show-floating-label  field-half ">
+                                                    <div class="field-input-wrapper field-input-wrapper-select">
+                                                        <label class="field-label"
+                                                               for="customer_shipping_district"><?= $this->translate('Phường/ Xã') ?></label>
+                                                        <select id="wardId" name="customerWardId"
+                                                                class="validate[required] field-input">
+                                                            <option value=""
+                                                                    selected=""><?= $this->translate('Chọn Phường/ Xã') ?></option>
+                                                            <?php
+                                                            if ($user) {
+                                                                $dts = $this->address()->loadWard($user->getDistrictLocationId());
+                                                                echo $this->address()->toSelectBox($dts, $user->getWardLocationId());
+                                                            }
+                                                            ?>
+                                                        </select>
+                                                        <input type="hidden" name="selectIdWard">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+                                    </div>
+                                    <div id="change_pick_location_or_shipping">
+                                        <div id="section-payment-method" class="section">
+                                            <div class="section-content">
+                                                <div class="content-box">
+                                                    <div class="radio-wrapper content-box-row at-home">
+                                                        <?php
+                                                        if ($this->template()->loadValue('PAY_AT_HOME')) {
+                                                            ?>
+                                                            <label class="radio-label payment_box">
+                                                                <div class="radio-input">
+                                                                    <input type="radio" id="rdPaymentMethodCod"
+                                                                           name="paymentMethod"
+                                                                           class="input-radio validate[required] cod"
+                                                                           value="<?= \Payment\Service\Payment::PAYMENT_METHOD_COD ?>"
+                                                                           checked="checked"/>
+                                                                </div>
+                                                                <span class="radio-label-primary"><?= $this->template()->loadValue('PAY_AT_HOME') ?></span>
+                                                            </label>
+                                                            <?php
+                                                        }
+                                                        if ($this->template()->loadValue('BANK_INFOR')) { ?>
+                                                            <div class="radio-wrapper content-box-row b">
+                                                                <label class="radio-label payment_box payment-box-bank">
+                                                                    <div class="radio-input">
+                                                                        <input type="radio" id="rdPaymentMethodOnline"
+                                                                               name="paymentMethod"
+                                                                               class="input-radio validate[required] online"
+                                                                               value="<?= \Payment\Service\Payment::PAYMENT_METHOD_ONLINE ?>"/>
+                                                                    </div>
+                                                                    <span class="radio-label-primary"><?= $this->template()->loadValue('TITLE_BANK') ?></span>
+                                                                </label>
+                                                                <div class="listBank"><?= $this->template()->loadValue('PAYMENT_ONLINE_CUSTOMER') ?></div>
+                                                            </div>
+                                                            <?php
+                                                        }
+                                                        if ($this->payment()->getPaymentAccount(\Payment\Model\StorePaymentAccounts::TYPE_ALEPAY)) { ?>
+                                                            <?php
+                                                            if ($this->template()->loadValue('ALEPAY')) {
+                                                                ?>
+                                                                <div class="radio-wrapper content-box-row b">
+                                                                    <label class="radio-label payment_box payment-box-bank">
+                                                                        <div class="radio-input">
+                                                                            <input type="radio"
+                                                                                   name="paymentMethod"
+                                                                                   class="input-radio validate[required] online"
+                                                                                   value="<?= \Payment\Service\Payment::PAYMENT_METHOD_ALEPAY_CREDIT_CARD ?>"/>
+                                                                        </div>
+                                                                        <span class="radio-label-primary"><?= $this->translate('Thanh toán online qua cổng thanh toán (Alepay)') ?></span>
+                                                                    </label>
+                                                                </div>
+                                                                <?php
+                                                            }
+                                                        }
+                                                        if ($this->payment()->getPaymentAccount(\Payment\Model\StorePaymentAccounts::PAYMENT_ONEPAY)) { ?>
+                                                            <?php
+                                                            if ($this->template()->loadValue('ONE_PAY')) {
+                                                                ?>
+                                                                <div class="radio-wrapper content-box-row b">
+                                                                    <label class="radio-label payment_box payment-box-bank">
+                                                                        <div class="radio-input">
+                                                                            <input type="radio"
+                                                                                   name="paymentMethod"
+                                                                                   class="input-radio validate[required] online"
+                                                                                   value="<?= \Payment\Service\Payment::PAYMENT_GATEWAY_ONEPAY ?>"/>
+                                                                        </div>
+                                                                        <span class="radio-label-primary"><?= $this->translate('Thanh toán online qua cổng thanh toán ONE PAY') ?></span>
+                                                                    </label>
+                                                                </div>
+                                                                <?php
+                                                            }
+                                                        }
+                                                        if ($this->payment()->getPaymentAccount(\Payment\Model\StorePaymentAccounts::PAYMENT_VTC)) { ?>
+                                                            <div class="radio-wrapper content-box-row b">
+                                                                <label class="radio-label payment_box payment-box-bank">
+                                                                    <div class="radio-input">
+                                                                        <input type="radio"
+                                                                               name="paymentMethod"
+                                                                               class="input-radio validate[required] online"
+                                                                               value="<?= \Payment\Service\Payment::PAYMENT_METHOD_VTCPAY_CREDIT_CARD ?>"/>
+                                                                    </div>
+                                                                    <span class="radio-label-primary"><?= $this->translate('Thanh toán bằng thẻ ngân hàng nội địa') ?></span>
+                                                                </label>
+                                                            </div>
+                                                            <div class="radio-wrapper content-box-row b">
+                                                                <label class="radio-label payment_box payment-box-bank">
+                                                                    <div class="radio-input">
+                                                                        <input type="radio"
+                                                                               name="paymentMethod"
+                                                                               class="input-radio validate[required] online"
+                                                                               value="<?= \Payment\Service\Payment::PAYMENT_METHOD_VTCPAY_MASTER_CARD ?>"/>
+                                                                    </div>
+                                                                    <span class="radio-label-primary"><?= $this->translate('Thanh toán bằng thẻ quốc tế Visa/Master card') ?></span>
+                                                                </label>
+                                                            </div>
+                                                            <?php
+                                                        }
+                                                        if ($this->payment()->getPaymentAccount(\Payment\Model\StorePaymentAccounts::PAYMENT_MOMO)) {
+                                                            if ($this->template()->loadValue('MOMO')) {
+                                                                ?>
+                                                                <div class="radio-wrapper content-box-row b">
+                                                                    <label class="radio-label payment_box payment-box-bank">
+                                                                        <div class="radio-input">
+                                                                            <input type="radio"
+                                                                                   name="paymentMethod"
+                                                                                   class="input-radio validate[required] online"
+                                                                                   value="<?= \Payment\Service\Payment::PAYMENT_METHOD_MOMO ?>"/>
+                                                                            <img src="/img/logo_momo.png" width="20px"
+                                                                                 alt="momo">
+                                                                        </div>
+                                                                        <span class="radio-label-primary"><?= $this->template()->loadValue('MOMO') ?></span>
+                                                                    </label>
+                                                                </div>
+                                                                <?php
+                                                            }
+                                                        }
+                                                        ?>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+
+                            </div>
+                            <div id="change_pick_location_or_shipping">
+
+                                <div id="section-shipping-rate">
+
+                                    <div class="section-content">
+                                        <div class="content-box  blank-slate">
+                                            <!--                                                       <div class="showEvn">-->
+                                            <!--                                                          <i class="blank-slate-icon icon icon-closed-box "></i>-->
+                                            <!--                                                           <p>Vui lòng chọn tỉnh / thành để có danh sách phương thức vận chuyển.</p>-->
+                                            <!--                                                       </div>-->
+                                            <div class="showCarrieList">
+                                                <span id="showCarrier"></span>
+                                                <div id="showCarrieList"></div>
+                                                <div id="tableShipFee"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="section-payment-method" class="section">
+                                    <div class="section-header">
+                                        <h2 class="section-title tp_title"><?= $this->translate('Phương thức thanh toán') ?></h2>
+                                        <label class="radio-label payment_box">
+                                            <div class="radio-input">
+                                                <input type="radio">
+                                            </div>
+                                            <span class="radio-label-primary"><?= $this->translate('thanh toán tại nhà') ?></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="step-footer">
+                        <input type="hidden" name="shipFee" value="0"/>
+                        <input type="hidden" id="totalCartMoney" value="<?= $totalCartMoney ?>"/>
+                        <div class="form-buttom">
+                            <div id="form_contact">
+                                <button type="submit" class="step-footer-continue-btn btn-lh tp_button">
+                                    <span class="btn-content"><?= $this->translate('LIÊN HỆ') ?></span>
+                                    <i class="btn-spinner icon icon-button-spinner"></i>
+                                </button>
+                            </div>
+                            <div id="form_next_step">
+                                <button type="submit" class="step-footer-continue-btn btn tp_button">
+                                    <span class="btn-content"><?= $this->translate('ĐẶT HÀNG') ?></span>
+                                    <i class="btn-spinner icon icon-button-spinner"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+            <div class="main-footer">
+
+            </div>
+    </div>
+    </form>
+</div>
+</div>
+<style>
+    .formError .formErrorContent {
+        min-width: 150px;
+    }
+
+    .ui-datepicker-calendar thead {
+        color: #000;
+    }
+
+    .main-body {
+        background-attachment: fixed;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+        position: relative;
+        overflow: hidden;
+    }
+</style>
+
+<div id="progressbar" style="display:none;">
+    <p style="color:#333;text-transform:uppercase;font-size:14px;text-align:center;font-weight:bold;"><?= $this->translate('Đơn hàng đang được thực hiện') ?></p>
+    <img data-sizes="auto" class="lazyload" data-src="/tp/T0361/img/ajax-loader.gif" alt="">
+</div>
+
+
+

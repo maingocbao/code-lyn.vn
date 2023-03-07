@@ -1,0 +1,55 @@
+<?php
+$bnBannerFooter = $this->store()->getCurrentBannerByCode('BANNER-FOOTER', ['limit' => 3]);
+?>
+<div id="site-overlay" class="site-overlay"></div>
+<input type="hidden" class="checkCookies" value='<?=isset($_COOKIE['WISHLIST_STORE_PRODUCT']) ? $_COOKIE['WISHLIST_STORE_PRODUCT'] : ''?>'>
+<div id="modalShow" class="modal fade" role="dialog">
+    <div class="modal-dialog ">
+        <div class="modal-content"></div>
+    </div>
+</div>
+<div class="main-footer">
+
+</div>
+<div class="footer">
+    <div class="container-fluid">
+        <div class="footer-top">
+            <div class="col-xl-4 col-lg-4 col-md-12 col-12 col-foo-1">
+                <div class="logo-header-footer">
+                    <a href="/" class="logo">
+                        <img src="<?= $this->store()->getLogoUri() ?>" alt="<?= $_SERVER['HTTP_HOST'] ?>">
+                    </a>
+                </div>
+                <p class="sum">  <?=$this->template()->loadValue('FOOTER_CONTENT_TOP')?></p>
+                <h4 class="title-menu"> <?= $this->translate('ĐĂNG KÝ NHẬN THÔNG TIN') ?></h4>
+                <form action="https://gmail.us20.list-manage.com/subscribe/post?u=513a2612959b4bf34336105a5&amp;id=b40a6d8345" method="post" id="mc-embedded-subscribe-form" class="mtSubcribeForm" name="mc-embedded-subscribe-form" target="_blank">
+                    <input id="email" name="EMAIL" type="email" value="" class="form-control" placeholder="Nhập email đăng ký của bạn">
+                    <button type="submit" id="subscribe" name="subscribe" class="btn btn-subscribe"><?= $this->translate('ĐĂNG KÝ') ?></button>
+                </form>
+                <div class="social">
+                    <a href="<?= $this->template()->loadValue('LINK_FACEBOOK')?>"><i class="fab fa-facebook-square"></i></a>
+                    <a href="<?= $this->template()->loadValue('LINK_YOUTUBE')?>"><i class="fab fa-youtube"></i></a>
+                    <a href="<?= $this->template()->loadValue('LINK_INSTAGRAM')?>"><i class="fab fa-instagram-square"></i></a>
+                </div>
+                <a href="" class="bct"><img class="lazyload1 loaded" src="/img/dathongbaobocongthuong.png" alt="bộ công thương" data-was-processed="true"></a>
+            </div>
+            <div class="col-xl-2 col-lg-2 col-md-3 col-12 col-foo col-foo-2">
+                <h4 class="title-menu"> <?=strip_tags( $this->template()->loadValue('FOOTER_ABOUT_US'))?><i class="fa fa-caret-down"></i></h4>
+                <?=$this->template()->loadValue('FOOTER_CONTENT')?>
+            </div>
+            <div class="col-xl-2 col-lg-2 col-md-3 col-12 col-foo col-foo-3">
+                <h4 class="title-menu"><?=strip_tags( $this->template()->loadValue('FOOTER_ABOUT_US1'))?><i class="fa fa-caret-down"></i></h4>
+                <?=$this->template()->loadValue('FOOTER_CONTENT1')?>
+            </div>
+            <div class="col-xl-4 col-lg-4 col-md-6 col-12 col-foo-4">
+                <h4 class="title-menu active"><?=strip_tags( $this->template()->loadValue('FOOTER_ABOUT_US2'))?><i class="fa fa-sort-up"></i></h4>
+                <?=$this->template()->loadValue('FOOTER_CONTENT_2')?>
+
+            </div>
+        </div>
+        <div class="copyright">
+            <hr>
+            <?=$this->template()->loadValue('FOOTER_BOOTOM_ABOUT')?>
+        </div>
+    </div>
+</div>

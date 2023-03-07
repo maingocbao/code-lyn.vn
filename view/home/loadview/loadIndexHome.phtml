@@ -1,0 +1,592 @@
+<script type='text/javascript'>
+    document.cookie = 'size=' + Math.max(screen.width) + ';';
+    (function () {
+        if (window.localStorage) {
+            if (!localStorage.getItem('firstLoad')) {
+                localStorage['firstLoad'] = true;
+                // window.location.reload();
+            } else {
+                localStorage.removeItem('firstLoad');
+            }
+        }
+    })();
+</script>
+<?php
+$categoryId = $this->uriParams()->getRequest()->getQuery('cateId');
+$name = $this->uriParams()->getRequest()->getQuery('name');
+$home = 'BANNER_HOME_DESKTOP_'.$name;
+$box = 'BANNER_BOX_DESKTOP_'.$name;
+$shop = 'BANNER_SHOP_DESKTOP_'.$name;
+$bottom = 'BANNER_BOTTOM_DESKTOP_'.$name;
+$center = 'BANNER_CENTER_DESKTOP_'.$name;
+
+if ((isset($_COOKIE["size"])) && ($_COOKIE["size"] <= 749) ){
+    $home = 'BANNER_HOME_MOBILE_'.$name;
+    $box = 'BANNER_BOX_MOBILE_'.$name;
+    $shop = 'BANNER_SHOP_MOBILE_'.$name;
+    $bottom = 'BANNER_BOTTOM_MOBILE_'.$name;
+    $center = 'BANNER_CENTER_MOBILE_'.$name;
+
+}
+
+$bnBannerHome = $this->store()->getBannerByPositionCode($home);
+$bnBannerBox = $this->store()->getCurrentBannerByCode($box, ['limit' => 3]);
+$bnBannerShop = $this->store()->getCurrentBannerByCode($shop, ['limit' => 2]);
+$bnBannerBottom = $this->store()->getCurrentBannerByCode($bottom, ['limit' => 3]);
+$bnBannerCenter = $this->store()->getCurrentBannerByCode($center, ['limit' => 3]);
+$productsHot = $this->product()->search([
+    'limit' => 4,
+    'showHot' => 1,
+    'categories' => true,
+    'loadContents' => true,
+    'categoryId' => $categoryId
+]);
+$productsNew = $this->product()->search([
+    'limit' => 4,
+    'showNew' => 1,
+    'categories' => true,
+    'loadContents' => true,
+    'categoryId' => $categoryId
+]);
+
+$priced = ' ₫';
+?>
+    <section class="main-text-slick">
+        <div class="header-main-slick">
+            <div class="slider single-item">
+                <div>
+                    <h3><?= $this->template()->loadValue('COLLECTION_HEADING_CONTENT1') ?></h3>
+                </div>
+
+                <div>
+                    <h3><?= $this->template()->loadValue('COLLECTION_HEADING_CONTENT2') ?></h3>
+                </div>
+
+                <div>
+                    <h3><?= $this->template()->loadValue('COLLECTION_HEADING_CONTENT3') ?></h3>
+                </div>
+
+                <div>
+                    <h3><?= $this->template()->loadValue('COLLECTION_HEADING_CONTENT1') ?></h3>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div class="banner-new-studio">
+        <div class="banner-new-img">
+            <?php
+            if ($bnBannerHome) {
+                foreach ($bnBannerHome as $b1) {
+                    ?>
+                    <div class="banner-new-desktop">
+                        <a href="<?= $b1->getViewLink() ?>">
+                            <img src="<?= $b1->getImageSrc() ?>" alt="<?= $b1->getName() ?>">
+                            <div class="text-new-desktop">
+                                <h1><?= $b1->getDescription() ?></h1>
+                                <p class="rte"><?= $b1->getIntro() ?></p>
+                                <?php if ($b1->getViewLink() && !($b1->getViewLink() == 'javascript:void(0);')) { ?>
+                                    <div class="button-wrap">
+                                        <a class="cta primary--light" href="<?= $b1->getViewLink() ?>"> Shop Now</a>
+                                    </div>
+                                <?php } ?>
+                            </div>
+                        </a>
+                    </div>
+                    <?php
+                }
+            }
+            ?>
+        </div>
+    </div>
+    <div class="home-product-new">
+        <div class="mod-full-width">
+            <div class="featured-collection__content-inner">
+                <div>
+                    <span>WOMENS</span>
+                    <h2>Sản phẩm mới</h2>
+                </div>
+                <a href="/product?show=new">
+                    View All
+                </a>
+            </div>
+            <div class="new-product-women container-fluid">
+                <?php
+                /* @var $p \Product\Model\Store */
+                foreach ($productsNew as $p) {
+                    $priceDiscount = $p->getPriceAfterDiscount();
+                    $percent = $p->calcDiscountPercent();
+                    $oldPrices = $p->getOldPrice();
+                    ?>
+                    <div class="product-new-list col-lg-3 col-md-4 col-sm-6 col-6 " data-id="<?= $p->getId() ?>">
+                        <div class="product-women">
+                            <div class="product-women-img">
+                                <a class="grid-view-item__link" href="<?= $p->getViewLink() ?>"
+                                   title="<?= $p->getName() ?>">
+                                    <picture>
+                                        <source class="imglarge" data-srcset="<?= $p->getThumbnailUri(); ?>">
+                                        <source class="imgsmall" data-srcset="<?= $p->getThumbnailUri(); ?>">
+                                        <img alt="<?= $p->getName() ?>" class="lazyload img_thumb_product" width="400" height="600" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAANSURBVBhXYzh8+PB/AAffA0nNPuCLAAAAAElFTkSuQmCC">
+                                    </picture>
+
+                                </a>
+                                <a class="wishlist-btn wishlist-product" href="javascript:void(0)" psId="<?= $p->getId() ?>">
+                                    <i class="far fa-heart"></i>
+                                </a>
+                                <?php
+                                if ($percent) {
+                                    ?>
+                                    <div class="goodsli-discount">
+                                        <div class="disc-txt">
+                                            <div class="disc-nowrap">
+                                                <span class="disc-num">
+                                                    <span class="j-item-discount"><?= $percent ?></span>
+                                                </span>%
+                                            </div>
+                                            off
+                                        </div>
+                                    </div>
+                                    <?php
+                                }
+                                ?>
+                            </div>
+                            <div class="button-add tp_button">
+                                <button title="Xem nhanh" class="action quick-view"
+                                        data-id="<?= $p->getId() ?>">
+                                    <span>Xem nhanh</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                         xmlns:xlink="http://www.w3.org/1999/xlink"
+                                         version="1.1" id="Capa_1" x="0px" y="0px"
+                                         viewBox="0 0 59.2 59.2"
+                                         style="enable-background:new 0 0 59.2 59.2;"
+                                         xml:space="preserve"><g>
+                                            <path d="M51.062,21.561c-11.889-11.889-31.232-11.889-43.121,0L0,29.501l8.138,8.138c5.944,5.944,13.752,8.917,21.561,8.917   s15.616-2.972,21.561-8.917l7.941-7.941L51.062,21.561z M49.845,36.225c-11.109,11.108-29.184,11.108-40.293,0l-6.724-6.724   l6.527-6.527c11.109-11.108,29.184-11.108,40.293,0l6.724,6.724L49.845,36.225z"/>
+                                            <path d="M28.572,21.57c-3.86,0-7,3.14-7,7c0,0.552,0.448,1,1,1s1-0.448,1-1c0-2.757,2.243-5,5-5c0.552,0,1-0.448,1-1   S29.125,21.57,28.572,21.57z"/>
+                                            <path d="M29.572,16.57c-7.168,0-13,5.832-13,13s5.832,13,13,13s13-5.832,13-13S36.741,16.57,29.572,16.57z M29.572,40.57   c-6.065,0-11-4.935-11-11s4.935-11,11-11s11,4.935,11,11S35.638,40.57,29.572,40.57z"/>
+                                        </g></svg>
+                                </button>
+                                <?php
+                                if ($p->getParentId() == $p::PS_PARENT_ROOT) {
+                                    echo '<button title="Mua ngay" class="action add-to-cart" onclick="location.href=' . "'" . ($p->getViewLink()) . "'" . '">';
+                                } else {
+                                    echo '<button title="Mua ngay" class="action add-to-cart flytocart" data-buy="1" data-psId="' . $p->getId() . '">';
+                                }
+                                ?>
+                                <span>Mua ngay</span>
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                     xmlns:xlink="http://www.w3.org/1999/xlink"
+                                     version="1.1" id="Capa_1" x="0px" y="0px"
+                                     width="27.948px" height="27.948px"
+                                     viewBox="0 0 27.948 27.948"
+                                     style="enable-background:new 0 0 27.948 27.948;"
+                                     xml:space="preserve"><g>
+                                        <path d="M9.689,19.484h15.503v1.936H8.133L4.99,7.153h-4.3V5.218h5.854L9.689,19.484z M11.45,22.708   c-1.447,0-2.62,1.172-2.62,2.619c0,1.446,1.173,2.621,2.62,2.621c1.447,0,2.62-1.175,2.62-2.621   C14.07,23.88,12.897,22.708,11.45,22.708z M22.25,22.708c-1.445,0-2.619,1.172-2.619,2.619c0,1.446,1.174,2.621,2.619,2.621   c1.447,0,2.621-1.175,2.621-2.621C24.872,23.88,23.698,22.708,22.25,22.708z M10.668,18.035L8.37,6.133h3.76L20.463,0l3.729,5.064   l-0.161,1.069h3.227l-2.687,11.902H10.668z M23.584,5.477l-0.892,0.656h0.794L23.584,5.477z M13.038,6.132h1.958l-0.117-0.16   l0.379-0.279l0.324,0.439h0.48L15.57,5.463l0.38-0.279l0.697,0.948h0.544l-0.89-1.207l0.381-0.279l1.095,1.486h0.626l-1.301-1.768   l0.379-0.28l1.507,2.048h0.544l-1.697-2.308l0.379-0.278l1.902,2.586h1.668l1.639-1.205l-3.07-4.176L13.038,6.132z M21.75,5.305   l-2.088-2.839l-0.382,0.279l2.089,2.839L21.75,5.305z M21.02,5.845l-2.09-2.84l-0.379,0.279l2.092,2.839L21.02,5.845z"/>
+                                    </g></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="product-caption ">
+                            <a class="item-url" href="<?= $p->getViewLink() ?>">
+                                <div class="marker new-product">
+                                    <h3 class="item-title">
+                                        <a href="<?= $p->getViewLink() ?>"
+                                           title="<?= $p->getName() ?>"> <?= $p->getName() ?>
+                                        </a>
+                                    </h3>
+                                </div>
+                                <div class="item-price">
+                                    <?php
+                                    if ($priceDiscount > 0) {
+                                        echo '<span class="pro-price-del"><del class="compare-price tp_product_price_old">' . number_format($p->getPrice()) . $priced . '</del></span>';
+                                        echo '<span class="tp_product_price price-sale">' . number_format($priceDiscount) . $priced . '</span>';
+                                    } else if (empty($p->getPrice()) || $p->getPrice() <= 0 || $p->getContactPrice()) {
+                                        $link = 'javascript:';
+                                        $taget = '';
+                                        echo '<a href="' . $link . '" ' . $taget . '><span class="tp_product_price">' . $this->template()->loadValue('PRICE_CONTACT') . '</span></a>';
+                                    } else {
+                                        $sale = '';
+                                        if ($p->getOldPrice()) {
+                                            $sale = 'price-sale';
+                                            echo '<span class="pro-price-del"><del class="compare-price tp_product_price_old">' . number_format($p->getOldPrice()) . $priced . '</del></span>';
+                                        }
+                                        echo '<span class="tp_product_price ' . $sale . '">' . number_format($p->getPrice()) . $priced . '</span>';
+                                    }
+                                    ?>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                <?php } ?>
+            </div>
+
+        </div>
+    </div>
+
+    <?php
+    if ($bnBannerCenter) {
+        ?>
+        <div class="back-to-school-definitely">
+        <?php
+        foreach ($bnBannerCenter as $b2) {
+            ?>
+            <div class="banner-new-desktop">
+                <a href="<?= $b2->getViewLink() ?>">
+                    <img src="<?= $b2->getImageSrc() ?>" alt="<?= $b2->getName() ?>">
+                    <div class="text-new-desktop">
+                        <h1><?= $b2->getDescription() ?></h1>
+                        <p class="rte"><?= $b2->getIntro() ?></p>
+                        <?php if ($b2->getViewLink() && !($b2->getViewLink() == 'javascript:void(0);')) { ?>
+                            <div class="button-wrap">
+                                <a class="cta primary--light" href="<?= $b2->getViewLink() ?>"> Shop Now</a>
+                            </div>
+                        <?php } ?>
+                    </div>
+                </a>
+            </div>
+            </div>
+        <?php }
+    }
+    ?>
+
+    <div class="home-product-new">
+        <div class="mod-full-width">
+            <div class="featured-collection__content-inner">
+                <div>
+                    <!--                    <span>WOMENS</span>-->
+                    <h2>Sản phẩm bán chạy</h2>
+                </div>
+                <a href="/product?show=hot">
+                    View All
+                </a>
+            </div>
+            <div class="new-product-women container-fluid">
+                <?php
+                foreach ($productsHot as $p) {
+                    $priceDiscount = $p->getPriceAfterDiscount();
+                    $percent = $p->calcDiscountPercent();
+                    $oldPrices = $p->getOldPrice();
+                    ?>
+                    <div class="product-new-list col-lg-3 col-md-4 col-sm-6 col-6 " data-id="<?= $p->getId() ?>">
+                        <div class="product-women">
+                            <div class="product-women-img">
+                                <a class="grid-view-item__link" href="<?= $p->getViewLink() ?>"
+                                   title="<?= $p->getName() ?>">
+                                    <picture>
+                                        <source class="imglarge" data-srcset="<?= $p->getThumbnailUri(); ?>">
+                                        <source class="imgsmall" data-srcset="<?= $p->getThumbnailUri(); ?>">
+                                        <img alt="<?= $p->getName() ?>" class="lazyload img_thumb_product" width="400" height="600" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAANSURBVBhXYzh8+PB/AAffA0nNPuCLAAAAAElFTkSuQmCC">
+                                    </picture>
+
+                                </a>
+                                <a class="wishlist-btn wishlist-product" href="javascript:void(0)" psId="<?= $p->getId() ?>">
+                                    <i class="far fa-heart"></i>
+                                </a>
+                                <?php
+                                if ($percent) {
+                                    ?>
+                                    <div class="goodsli-discount">
+                                        <div class="disc-txt">
+                                            <div class="disc-nowrap">
+                                                <span class="disc-num">
+                                                    <span class="j-item-discount"><?= $percent ?></span>
+                                                </span>%
+                                            </div>
+                                            off
+                                        </div>
+                                    </div>
+                                    <?php
+                                }
+                                ?>
+                            </div>
+                            <div class="button-add tp_button">
+                                <button title="Xem nhanh" class="action quick-view"
+                                        data-id="<?= $p->getId() ?>">
+                                    <span>Xem nhanh</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                         xmlns:xlink="http://www.w3.org/1999/xlink"
+                                         version="1.1" id="Capa_1" x="0px" y="0px"
+                                         viewBox="0 0 59.2 59.2"
+                                         style="enable-background:new 0 0 59.2 59.2;"
+                                         xml:space="preserve"><g>
+                                            <path d="M51.062,21.561c-11.889-11.889-31.232-11.889-43.121,0L0,29.501l8.138,8.138c5.944,5.944,13.752,8.917,21.561,8.917   s15.616-2.972,21.561-8.917l7.941-7.941L51.062,21.561z M49.845,36.225c-11.109,11.108-29.184,11.108-40.293,0l-6.724-6.724   l6.527-6.527c11.109-11.108,29.184-11.108,40.293,0l6.724,6.724L49.845,36.225z"/>
+                                            <path d="M28.572,21.57c-3.86,0-7,3.14-7,7c0,0.552,0.448,1,1,1s1-0.448,1-1c0-2.757,2.243-5,5-5c0.552,0,1-0.448,1-1   S29.125,21.57,28.572,21.57z"/>
+                                            <path d="M29.572,16.57c-7.168,0-13,5.832-13,13s5.832,13,13,13s13-5.832,13-13S36.741,16.57,29.572,16.57z M29.572,40.57   c-6.065,0-11-4.935-11-11s4.935-11,11-11s11,4.935,11,11S35.638,40.57,29.572,40.57z"/>
+                                        </g></svg>
+                                </button>
+                                <?php
+                                if ($p->getParentId() == $p::PS_PARENT_ROOT) {
+                                    echo '<button title="Mua ngay" class="action add-to-cart" onclick="location.href=' . "'" . ($p->getViewLink()) . "'" . '">';
+                                } else {
+                                    echo '<button title="Mua ngay" class="action add-to-cart flytocart" data-buy="1" data-psId="' . $p->getId() . '">';
+                                }
+                                ?>
+                                <span>Mua ngay</span>
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                     xmlns:xlink="http://www.w3.org/1999/xlink"
+                                     version="1.1" id="Capa_1" x="0px" y="0px"
+                                     width="27.948px" height="27.948px"
+                                     viewBox="0 0 27.948 27.948"
+                                     style="enable-background:new 0 0 27.948 27.948;"
+                                     xml:space="preserve"><g>
+                                        <path d="M9.689,19.484h15.503v1.936H8.133L4.99,7.153h-4.3V5.218h5.854L9.689,19.484z M11.45,22.708   c-1.447,0-2.62,1.172-2.62,2.619c0,1.446,1.173,2.621,2.62,2.621c1.447,0,2.62-1.175,2.62-2.621   C14.07,23.88,12.897,22.708,11.45,22.708z M22.25,22.708c-1.445,0-2.619,1.172-2.619,2.619c0,1.446,1.174,2.621,2.619,2.621   c1.447,0,2.621-1.175,2.621-2.621C24.872,23.88,23.698,22.708,22.25,22.708z M10.668,18.035L8.37,6.133h3.76L20.463,0l3.729,5.064   l-0.161,1.069h3.227l-2.687,11.902H10.668z M23.584,5.477l-0.892,0.656h0.794L23.584,5.477z M13.038,6.132h1.958l-0.117-0.16   l0.379-0.279l0.324,0.439h0.48L15.57,5.463l0.38-0.279l0.697,0.948h0.544l-0.89-1.207l0.381-0.279l1.095,1.486h0.626l-1.301-1.768   l0.379-0.28l1.507,2.048h0.544l-1.697-2.308l0.379-0.278l1.902,2.586h1.668l1.639-1.205l-3.07-4.176L13.038,6.132z M21.75,5.305   l-2.088-2.839l-0.382,0.279l2.089,2.839L21.75,5.305z M21.02,5.845l-2.09-2.84l-0.379,0.279l2.092,2.839L21.02,5.845z"/>
+                                    </g></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="product-caption ">
+                            <a class="item-url" href="<?= $p->getViewLink() ?>">
+                                <div class="marker new-product">
+                                    <h3 class="item-title">
+                                        <a href="<?= $p->getViewLink() ?>"
+                                           title="<?= $p->getName() ?>"> <?= $p->getName() ?>
+                                        </a>
+                                    </h3>
+                                </div>
+                                <div class="item-price">
+                                    <?php
+                                    if ($priceDiscount > 0) {
+                                        echo '<span class="pro-price-del"><del class="compare-price tp_product_price_old">' . number_format($p->getPrice()) . $priced . '</del></span>';
+                                        echo '<span class="tp_product_price price-sale">' . number_format($priceDiscount) . $priced . '</span>';
+                                    } else if (empty($p->getPrice()) || $p->getPrice() <= 0 || $p->getContactPrice()) {
+                                        $link = 'javascript:';
+                                        $taget = '';
+                                        echo '<a href="' . $link . '" ' . $taget . '><span class="tp_product_price">' . $this->template()->loadValue('PRICE_CONTACT') . '</span></a>';
+                                    } else {
+                                        $sale = '';
+                                        if ($p->getOldPrice()) {
+                                            $sale = 'price-sale';
+                                            echo '<span class="pro-price-del"><del class="compare-price tp_product_price_old">' . number_format($p->getOldPrice()) . $priced . '</del></span>';
+                                        }
+                                        echo '<span class="tp_product_price ' . $sale . '">' . number_format($p->getPrice()) . $priced . '</span>';
+                                    }
+                                    ?>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                <?php } ?>
+            </div>
+
+        </div>
+    </div>
+
+    <?php
+    if ($bnBannerBox) {
+        ?>
+        <div class="back-to-school-apex">
+        <?php
+        foreach ($bnBannerBox as $b3) {
+            ?>
+            <div class="banner-new-desktop">
+                <a href="<?= $b3->getViewLink() ?>">
+                    <img src="<?= $b3->getImageSrc() ?>" alt="<?= $b3->getName() ?>">
+                    <div class="text-new-desktop">
+                        <h1><?= $b3->getName() ?></h1>
+                        <p class="rte"><?= $b3->getIntro() ?></p>
+                        <div class="button-wrap">
+                            <?php if ($b3->getViewLink() && !($b3->getViewLink() == 'javascript:void(0);')) { ?>
+                                <a class="cta primary--light" href="<?= $b3->getViewLink() ?>"> Shop Now</a>
+                            <?php } ?>
+                            <?php if ($b3->getDescription() && !($b3->getDescription() == 'javascript:void(0);')) { ?>
+                                <a class="secondary-right-mobile" href="<?= $b3->getDescription() ?>">shop mens</a>
+                            <?php } ?>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            </div>
+        <?php }
+    } ?>
+<?php
+$promotionId = $this->template()->loadValue('PROMOTION_ID');
+if (isset($promotionId) && $promotionId) {
+    $promotionMrkt = $this->marketing()->getPromotion(['limit' => 1, 'id' => $promotionId]);
+    $productsMrkt = $this->marketing()->getPromotionProduct(['limit' => 4, 'id' => $promotionId]);
+    if (isset($promotionMrkt[0]) && $promotionMrkt[0] && $productsMrkt) {
+        $endDate = $promotionMrkt[0]->getEndDate();
+        ?>
+        <div class="home-product-new">
+            <div class="mod-full-width">
+                <div class="featured-collection__content-inner">
+                    <div>
+                        <h2>Sản phẩm sale</h2>
+                    </div>
+                    <a href="/product?show=discount">
+                        View All
+                    </a>
+                </div>
+                <div class="new-product-women container-fluid">
+                    <?php
+                    /** @var  $p \Product\Model\Store */
+                    foreach ($productsMrkt as $p) {
+                        $priceDiscount = $p->getPriceAfterDiscount();
+                        $percent = $p->calcDiscountPercent();
+                        $oldPrices = $p->getOldPrice();
+                        ?>
+                        <div class="product-new-list col-lg-3 col-md-4 col-sm-6 col-6 " data-id="<?= $p->getId() ?>">
+                            <div class="product-women">
+                                <div class="product-women-img">
+                                    <a class="grid-view-item__link" href="<?= $p->getViewLink() ?>"
+                                       title="<?= $p->getName() ?>">
+                                        <picture>
+                                            <source class="imglarge" data-srcset="<?= $p->getThumbnailUri(); ?>">
+                                            <source class="imgsmall" data-srcset="<?= $p->getThumbnailUri(); ?>">
+                                            <img alt="<?= $p->getName() ?>" class="lazyload img_thumb_product" width="400" height="600" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAANSURBVBhXYzh8+PB/AAffA0nNPuCLAAAAAElFTkSuQmCC">
+                                        </picture>
+
+                                    </a>
+                                    <a class="wishlist-btn wishlist-product" href="javascript:void(0)" psId="<?= $p->getId() ?>">
+                                        <i class="far fa-heart"></i>
+                                    </a>
+                                    <?php
+                                    if ($percent) {
+                                        ?>
+                                        <div class="goodsli-discount">
+                                            <div class="disc-txt">
+                                                <div class="disc-nowrap">
+                                                <span class="disc-num">
+                                                    <span class="j-item-discount"><?= $percent ?></span>
+                                                </span>%
+                                                </div>
+                                                off
+                                            </div>
+                                        </div>
+                                        <?php
+                                    }
+                                    ?>
+                                </div>
+                                <div class="button-add tp_button">
+                                    <button title="Xem nhanh" class="action quick-view"
+                                            data-id="<?= $p->getId() ?>">
+                                        <span>Xem nhanh</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                             xmlns:xlink="http://www.w3.org/1999/xlink"
+                                             version="1.1" id="Capa_1" x="0px" y="0px"
+                                             viewBox="0 0 59.2 59.2"
+                                             style="enable-background:new 0 0 59.2 59.2;"
+                                             xml:space="preserve"><g>
+                                                <path d="M51.062,21.561c-11.889-11.889-31.232-11.889-43.121,0L0,29.501l8.138,8.138c5.944,5.944,13.752,8.917,21.561,8.917   s15.616-2.972,21.561-8.917l7.941-7.941L51.062,21.561z M49.845,36.225c-11.109,11.108-29.184,11.108-40.293,0l-6.724-6.724   l6.527-6.527c11.109-11.108,29.184-11.108,40.293,0l6.724,6.724L49.845,36.225z"/>
+                                                <path d="M28.572,21.57c-3.86,0-7,3.14-7,7c0,0.552,0.448,1,1,1s1-0.448,1-1c0-2.757,2.243-5,5-5c0.552,0,1-0.448,1-1   S29.125,21.57,28.572,21.57z"/>
+                                                <path d="M29.572,16.57c-7.168,0-13,5.832-13,13s5.832,13,13,13s13-5.832,13-13S36.741,16.57,29.572,16.57z M29.572,40.57   c-6.065,0-11-4.935-11-11s4.935-11,11-11s11,4.935,11,11S35.638,40.57,29.572,40.57z"/>
+                                            </g></svg>
+                                    </button>
+                                    <?php
+                                    if ($p->getParentId() == $p::PS_PARENT_ROOT) {
+                                        echo '<button title="Mua ngay" class="action add-to-cart" onclick="location.href=' . "'" . ($p->getViewLink()) . "'" . '">';
+                                    } else {
+                                        echo '<button title="Mua ngay" class="action add-to-cart flytocart" data-buy="1" data-psId="' . $p->getId() . '">';
+                                    }
+                                    ?>
+                                    <span>Mua ngay</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                         xmlns:xlink="http://www.w3.org/1999/xlink"
+                                         version="1.1" id="Capa_1" x="0px" y="0px"
+                                         width="27.948px" height="27.948px"
+                                         viewBox="0 0 27.948 27.948"
+                                         style="enable-background:new 0 0 27.948 27.948;"
+                                         xml:space="preserve"><g>
+                                            <path d="M9.689,19.484h15.503v1.936H8.133L4.99,7.153h-4.3V5.218h5.854L9.689,19.484z M11.45,22.708   c-1.447,0-2.62,1.172-2.62,2.619c0,1.446,1.173,2.621,2.62,2.621c1.447,0,2.62-1.175,2.62-2.621   C14.07,23.88,12.897,22.708,11.45,22.708z M22.25,22.708c-1.445,0-2.619,1.172-2.619,2.619c0,1.446,1.174,2.621,2.619,2.621   c1.447,0,2.621-1.175,2.621-2.621C24.872,23.88,23.698,22.708,22.25,22.708z M10.668,18.035L8.37,6.133h3.76L20.463,0l3.729,5.064   l-0.161,1.069h3.227l-2.687,11.902H10.668z M23.584,5.477l-0.892,0.656h0.794L23.584,5.477z M13.038,6.132h1.958l-0.117-0.16   l0.379-0.279l0.324,0.439h0.48L15.57,5.463l0.38-0.279l0.697,0.948h0.544l-0.89-1.207l0.381-0.279l1.095,1.486h0.626l-1.301-1.768   l0.379-0.28l1.507,2.048h0.544l-1.697-2.308l0.379-0.278l1.902,2.586h1.668l1.639-1.205l-3.07-4.176L13.038,6.132z M21.75,5.305   l-2.088-2.839l-0.382,0.279l2.089,2.839L21.75,5.305z M21.02,5.845l-2.09-2.84l-0.379,0.279l2.092,2.839L21.02,5.845z"/>
+                                        </g></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="product-caption ">
+                                <a class="item-url" href="<?= $p->getViewLink() ?>">
+                                    <div class="marker new-product">
+                                        <h3 class="item-title">
+                                            <a href="<?= $p->getViewLink() ?>"
+                                               title="<?= $p->getName() ?>"> <?= $p->getName() ?>
+                                            </a>
+                                        </h3>
+                                    </div>
+                                    <div class="item-price">
+                                        <?php
+                                        if ($priceDiscount > 0) {
+                                            echo '<span class="pro-price-del"><del class="compare-price tp_product_price_old">' . number_format($p->getPrice()) . $priced . '</del></span>';
+                                            echo '<span class="tp_product_price price-sale">' . number_format($priceDiscount) . $priced . '</span>';
+                                        } else if (empty($p->getPrice()) || $p->getPrice() <= 0 || $p->getContactPrice()) {
+                                            $link = 'javascript:';
+                                            $taget = '';
+                                            echo '<a href="' . $link . '" ' . $taget . '><span class="tp_product_price">' . $this->template()->loadValue('PRICE_CONTACT') . '</span></a>';
+                                        } else {
+                                            $sale = '';
+                                            if ($p->getOldPrice()) {
+                                                $sale = 'price-sale';
+                                                echo '<span class="pro-price-del"><del class="compare-price tp_product_price_old">' . number_format($p->getOldPrice()) . $priced . '</del></span>';
+                                            }
+                                            echo '<span class="tp_product_price ' . $sale . '">' . number_format($p->getPrice()) . $priced . '</span>';
+                                        }
+                                        ?>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    <?php } ?>
+                </div>
+
+            </div>
+        </div>
+        <?php
+    }
+}
+?>
+
+
+<?php
+    if ($bnBannerShop) {
+        ?>
+        <div class="home-shop-womens">
+            <section class="multi-image-block">
+                <div class="grid--no-gutters">
+                    <?php
+                    foreach ($bnBannerShop as $b4) {
+                        ?>
+                        <div class="grid--no-gutters-left">
+                            <a href="<?= $b4->getViewLink() ?>"><img src="<?= $b4->getImageSrc() ?>"
+                                                                     alt="<?= $b4->getName() ?>"></a>
+                            <?php if ($b4->getViewLink() && !($b4->getViewLink() == 'javascript:void(0);')) { ?>
+                                <div class="grid--no-gutters-text-left">
+                                    <h1><?= $b4->getDescription() ?></h1>
+                                    <button class="btn-gutters-left">shop</button>
+                                </div>
+                            <?php } ?>
+                        </div>
+                        <?php
+                    }
+                    ?>
+                </div>
+            </section>
+        </div>
+        <?php
+    }
+    if ($bnBannerBottom) {
+        ?>
+        <div class="banner-home-bottom">
+            <?php
+            foreach ($bnBannerBottom as $b5) {
+                ?>
+                <div class="img-banner_bottom">
+                    <img src="<?= $b5->getImageSrc() ?>"
+                         alt="<?= $b5->getName() ?>">
+                </div>
+                <?php
+            }
+            ?>
+        </div>
+        <?php
+    } ?>
+    <div class="home-sign-bottom">
+        <div class="nsb-container">
+            <p>Want e-mails you'll actually read? Sign up for exclusive deals, our latest drops, and more!</p>
+            <a href="" class="cta primary--light">
+                Sign up
+            </a>
+        </div>
+    </div>
+    <div class="shopify-section index-section">
+        <div class="seo-block">
+            <h1><?= $this->template()->loadValue('HOME_MAIN_TITLE') ?></h1>
+            <div class="seo-block__content"><p> <?= $this->template()->loadValue('HOME_MAIN_CONTENT') ?></p>
+            </div>
+        </div>
+    </div>
+

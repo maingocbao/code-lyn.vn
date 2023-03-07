@@ -1,0 +1,888 @@
+<?php
+$storeId = $GLOBALS['domainConfigs']['storeId'];
+/* @var $p \Product\Model\Store */
+$categories = $this->productCategory()->getCategories();
+$p = $this->product;
+if (!$p) {
+    echo '<h3>Không tìm thấy sản phẩm yêu cầu</h3>';
+}
+$priceDiscount = $p->getPriceAfterDiscount();
+$percent = $p->calcDiscountPercent();
+$ivt = $p->getInventory() ? $p->getInventory()->calcAvailable() : 0;
+$variableAttributes = $p->getVariableAttributes();
+$this->headTitle($p->getName());
+$this->headMeta()->appendName('description', ($p->getMetaDescription() ?: $p->getName()));
+$this->headMeta()->appendName('keywords', ($p->getMetaKeywords() ?: $p->getName()));
+$this->headMeta()->appendProperty('og:title', $p->getMetaTitle() ?: $p->getName());
+$this->headMeta()->appendProperty('og:description', $p->getMetaDescription() ?: $p->getName());
+$this->headMeta()->appendProperty('og:type', 'product');
+$this->headMeta()->appendProperty('og:image', $p->getThumbnailUri());
+$priced = ' ₫';
+$this->headLink([
+    'rel' => 'canonical',
+    'href' => getCurrentFullUrl(true) . $p->getViewLink()
+]);
+$this->headLink()->appendStylesheet($this->libs()->srcLink([
+    '/js/jquery/cloudzoom/cloudzoom.css',
+], 1));
+$this->headScript()->appendFile($this->libs()->srcLink([
+    '/js/jquery/cloudzoom/cloudzoom.js',
+    '/tp/T0367/js/pview.js',
+], 1));
+
+
+$rating = $this->social()->summaryRating(['itemId' => $p->getId()]);
+$productRate = $this->social()->searchProductRates(['productId' => $p->getId()]);
+$ratePview = $rating->getRate() ? round($rating->getRate()) : 0;
+$countRating = $this->social()->countRating(['itemId' => $p->getId(), 'type' => 1]) ?: 0;
+$totalProducts = (int)$this->cart()->getServiceCart()->getTotalQuantities();
+$childImgs = $p->getImages();
+$bannerSize = $this->store()->getBannerByPositionCode('BANNER_SIZE', ['limit' => 1]);
+$tags = $this->tag()->getTags([
+    'itemId' => $p->getId(),
+    'type' => \Product\Model\ItemTags::TYPE_PRODUCT
+]);
+?>
+<main>
+    <section class="main-text-slick">
+        <div class="header-main-slick">
+            <div class="slider single-item">
+                <div>
+                    <h3><?= $this->template()->loadValue('COLLECTION_HEADING_CONTENT1') ?></h3>
+                </div>
+
+                <div>
+                    <h3><?= $this->template()->loadValue('COLLECTION_HEADING_CONTENT2') ?></h3>
+                </div>
+
+                <div>
+                    <h3><?= $this->template()->loadValue('COLLECTION_HEADING_CONTENT3') ?></h3>
+                </div>
+
+            </div>
+        </div>
+        <?php
+        $embedCode = '';
+        $thumbURLVideo = '';
+        $styleImg = '';
+        $linkVideo = $p->getVideo();
+        $Video = str_replace('watch?v=', 'embed/', $linkVideo);
+
+
+        if ($p->getVideo()) {
+            $embedCode = '<iframe id="if-video" width="100%" height="395" src="' . $Video . '" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
+            $embedCodeAutoPlay = '<iframe id="if-video" width="100%" height="395" src="' . $Video . '?rel=0&autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
+            preg_match('/src="([^"]+)"/', $embedCode, $match);
+
+            // Extract video url from embed code
+            $videoURL = $match[1];
+            $urlArr = explode("/", $videoURL);
+            $urlArrNum = is_array($urlArr) ? count($urlArr) : 0;
+
+            // YouTube video ID
+            $youtubeVideoId = $urlArr[$urlArrNum - 1];
+
+            // Generate youtube thumbnail url
+            $thumbURLVideo = 'http://img.youtube.com/vi/' . $youtubeVideoId . '/0.jpg';
+            $styleImg = 'style="display: none"';
+        }
+        ?>
+    </section>
+    <div class="main-product">
+        <div class="portal-product">
+            <div class="background-view-product">
+                <ul class="breadcrumbs-product">
+                    <li><a href="https://www.gymshark.com" title="Home">home</a></li>
+                    <li>Vital Seamless 2.0 V Neck Sports Bra</li>
+                </ul>
+                <div class="view-product">
+                    <div class="view-product-mobile">
+                        <div class="slick-mobile">
+                            <?php
+                            if ($childImgs) {
+                                if ($p->getVideo()) { ?>
+                                    <iframe style="min-height: 360px" src="<?= $p->getVideo() ?>" frameborder="0"
+                                            allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                                    <?php
+                                }
+                                ?>
+
+                                <?php $k = 0;
+                                foreach ($childImgs as $childImg) { ?>
+                                    <a class="fancybox-album" rel="gallery2" href="<?= $childImg->getSrcUri(); ?>">
+                                        <img src="<?= $childImg->getSrcUri(); ?>"
+                                             alt="<?= $p->getName() ?>"
+                                        >
+                                    </a>
+                                    <?php
+                                    $k++;
+                                }
+                            } ?>
+                        </div>
+
+                        <div class="slider-nav">
+                            <?php
+                            if ($childImgs) {
+                            if ($p->getVideo()) { ?>
+                                <img src="<?= $thumbURLVideo ?>" alt="video"/>
+
+                                <?php
+                            }
+                            ?>
+
+                            <?php
+                            foreach ($childImgs
+
+                            as $childImg) { ?>
+                            <a class="product-gallery__thumb-placeholder"
+                               href="javascript:void(0);">
+                                <img alt="<?= $p->getName() ?>"
+                                     src="<?= $childImg->getThumbnailUri(); ?>"
+                                >
+                                <?php
+                                }
+                                } ?>
+                        </div>
+                    </div>
+
+                    <div class="view-product-left">
+                        <div class="product-gallery">
+                            <div class="product-gallery__thumbs-container">
+                                <div class="product-gallery__thumbs thumb-fix">
+                                    <?php if ($p->getVideo()) {
+                                        ?>
+                                        <div id="video_slide" class="product-video-item thumbnail"
+                                             data-src="<?= $p->getVideo() ?>">
+                                            <img src="<?= $thumbURLVideo ?>" alt="video"/>
+                                        </div>
+                                    <?php } ?>
+                                    <?php
+                                    $childImgs = $p->getImages();
+                                    if ($childImgs) {
+                                        /* @var $childImg \Product\Model\Image */
+                                        foreach ($childImgs as $childImg) {
+                                            ?>
+                                            <div class="product-gallery__thumb thumbnailImage"
+                                                 data-src="<?= $childImg->getSrc() ?>">
+                                                <a class="product-gallery__thumb-placeholder"
+                                                   href="javascript:void(0);">
+                                                    <img class="z cloudzoom" alt="<?= $p->getName() ?>"
+                                                         src="<?= $childImg->getThumbnailUri(); ?>"
+                                                         data-cloudzoom="useZoom: '.cloudzoom', image: '<?= $childImg->getThumbnailUri() ?>',
+                                                        zoomImage: '<?= $childImg->getSrcUri() ?>'">
+                                                </a>
+                                            </div>
+                                            <?php
+                                        }
+                                    } else {
+                                        ?>
+                                        <div class="product-gallery__thumb thumbnailImage"
+                                             data-src="<?= $p->getThumbnailUri() ?>">
+                                            <a class="product-gallery__thumb-placeholder"
+                                               href="javascript:void(0);">
+                                                <img class="cloudzoom-gallery" alt="<?= $p->getName() ?>"
+                                                     src="<?= $p->getThumbnailUri(); ?>"
+                                                     data-cloudzoom="useZoom: '.cloudzoom', image: '<?= $p->getThumbnailUri() ?>',
+                                                        zoomImage: '<?= $p->getImageUri() ?>'"
+                                                >
+                                            </a>
+                                        </div>
+                                    <?php } ?>
+                                </div>
+                            </div>
+
+                            <div class="product-image-detail box__product-gallery scroll">
+                                <?php
+                                $style = '';
+                                if ($p->getVideo()) {
+                                    $style = 'display: none';
+                                    ?>
+                                    <div class="product-gallery-item gallery-item " id="video">
+                                        <iframe width="560" height="315" src="<?= $p->getVideo() ?>" frameborder="0"
+                                                allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                                    </div>
+                                <?php } ?>
+                                <ul id="sliderproduct" class="site-box-content slide_product" style="<?= $style ?>">
+                                    <li class="product-gallery-item gallery-item">
+                                        <a href="javascript:void(0);" class="image-frame">
+                                            <img class="product-image-feature cloudzoom"
+                                                 src="<?= $childImg->getSrcUri(); ?>"
+                                                 alt="<?= $p->getName() ?>"
+                                                 data-cloudzoom="zoomImage: '<?= $childImg->getSrcUri(); ?>'">
+                                        </a>
+                                    </li>
+                                </ul>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="view-product-right">
+                        <div class="price-title-product">
+                            <div class="ofnlv"><span style="vertical-align: inherit;">
+                                            <span style="vertical-align: inherit;">New</span>
+                                        </span></div>
+                            <div class="lgqWTZ">
+                                <h1 class="Styles__ProductTitle-qfm034-1 hLJzaQ">
+                                    <span style="vertical-align: inherit;"><?= $p->getName() ?></span>
+                                </h1>
+                                <h5 class="jBVFPc">
+                                    <span class="pro_sku"><strong><?= $this->translate('Mã sản phẩm') ?>:</strong> <?= $p->getCode() ?></span>
+                                </h5>
+                                <!--                                <span class="iDXPQl"><span-->
+                                <!--                                            style="vertical-align: inherit;"><span style="vertical-align: inherit;">hỗ trợ ánh sáng</span></span></span>-->
+                                <div class="kYoSVO">
+                                    <?php
+                                    if (!$p->getPrice() || empty($p->getPrice())) {
+                                        echo '<span class="pro-price tp_product_detail_price price">' . $this->template()->loadValue('PRICE_CONTACT') . '</span>';
+                                    } else if ($priceDiscount > 0) {
+                                        echo '<span class="pro-price tp_product_detail_price price">' . number_format($priceDiscount) . 'đ</span>';
+                                        echo '<del class="product-price-old tp_product_detail_price_old">' . number_format($p->getPrice()) . 'đ</del>';
+                                    } else {
+                                        echo '<span class="pro-price tp_product_detail_price price">' . number_format($p->getPrice()) . 'đ</span>';
+                                        if ($p->getOldPrice()) {
+                                            echo '<del class="product-price-old tp_product_detail_price_old">' . number_format($p->getOldPrice()) . 'đ</del>';
+                                        }
+                                    }
+                                    ?>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="select-swatch clearfix">
+                            <?php
+                            $variableAttributes = $p->getVariableAttributes();
+                            $flag = 0;
+                            if (isset($variableAttributes['color']) || isset($variableAttributes['size'])) {
+                                if (isset($variableAttributes['color'])) {
+                                    /* @var $color \Product\Model\Attribute */
+                                    $color = $variableAttributes['color'];
+                                    $values = $color->getChildValues();
+                                    if ($numbCl = is_array($values) ? count($values) : 0) {
+                                        $flag++;
+                                        ?>
+                                        <div class="colorPicker swatch colors clearfix">
+                                            <div class="header">Màu sắc</div>
+                                            <div class="select-swap color req"
+                                                 data-column="<?= $color->getColumn() ?>">
+                                                <?php
+                                                foreach ($values as $a) {
+                                                    /* @var $a \Product\Model\AttributeValue */
+                                                    $img = $p->getAttrValueImage([$color->getColumn() => $a->getId()], false);
+                                                    //Lấy ra tên ảnh sp con
+                                                    $imgSrc = $p->getAttrValueImage([$color->getColumn() => $a->getId()], false, ['return' => 'image']);
+                                                    $strImg = explode('/', $imgSrc);
+                                                    $src = end($strImg);
+                                                    $pIdsAttrJson = json_encode($p->getAttrValueImage([$color->getColumn() => $a->getId()], true));
+                                                    $pIdsAttrStr = str_replace(']', '', str_replace('[', '', $pIdsAttrJson));
+                                                    $img = $img ?: $p->getThumbnailUri();
+
+                                                    echo '<a rel="nofollow" href="javascript:" data-cloudzoom="useZoom: \'.cloudzoom\', image: \'' . $img . '\', zoomImage: \'' . $img . '\'"
+                                                                class="n-sd swatch-element colorAtt cloudzoom-gallery ' . (($numbCl == 1) ? 'active' : '') . '"
+                                                                data-value="' . $a->getId() . '" title="' . $a->getName() . '" data-name="' . '"
+                                                                data-psid ="' . $pIdsAttrStr . '" data-selId="' . $pIdsAttrStr . '"
+                                                                data-src="' . $src . '" >
+                                                                ' . (($img) ? '<img src="' . $img . '" alt="" />' . '</span>' : '') . '
+                                                                </a>'; ?>
+                                                    <?php
+
+                                                }
+                                                ?>
+                                            </div>
+                                        </div>
+                                        <?php
+                                    }
+                                }
+                                if (isset($variableAttributes['size'])) {
+                                    /* @var $size \Product\Model\Attribute */
+                                    $size = $variableAttributes['size'];
+                                    $values = $size->getChildValues();
+                                    if ($numbS = is_array($values) ? count($values) : 0) {
+                                        $flag++;
+                                        ?>
+                                        <div class="sizePicker swatch clearfix">
+                                            <div class="guideSize">
+                                                <div class="header">Kích thước</div>
+                                            </div>
+                                            <div class="select-swap size req"
+                                                 data-column="<?= $size->getColumn() ?>">
+                                                <?php
+                                                foreach ($values as $attrValue) {
+                                                    /* @var $attrValue \Product\Model\AttributeValue */
+                                                    echo '<a data-value="' . $attrValue->getId() . '" href="javascript:void(0)" class="swatch-element ' . (($numbS == 1) ? 'active' : '') . '">
+                                                                    <span>' . $attrValue->getName() . '</span>
+                                                                </a>';
+                                                }
+                                                ?>
+                                            </div>
+                                        </div>
+                                        <?php
+                                    }
+                                }
+                            }
+                            $flagChild = 0;
+                            if ($flag <= 0 && ($childs = $p->getChilds())) {
+                                if ($flag <= 0 && ($childs = $p->getChilds())) {
+                                    $flagChild = is_array($childs) ? count($childs) : 0;
+                                    echo '<select class="input childProducts" style="width: 100%; margin-bottom: 10px;padding: 21px;border-radius: 4px;">';
+                                    echo '<option value="1">' . $this->translate('Chọn sản phẩm') . '</option>';
+                                    foreach ($childs as $cp) {
+                                        echo '<option href="' . $cp->getImageUri() . '" value="' . $cp->getId() . ',' . $cp->getPrice() . '" data-src="' . $cp->getImageUri() . '">' . str_replace($p->getName(), '', $cp->getName()) . '</option>';
+                                    }
+                                    echo '</select>';
+                                }
+                            }
+                            ?>
+                        </div>
+                        <div class="quantity-area clearfix">
+                            <input data-id="<?= $p->getId() ?>" type="button" value="-"
+                                   class="qty-btn minus btn-minus-view">
+                            <input data-id="<?= $p->getId() ?>" type="text" id="quantity" name="qty"
+                                   value="1" min="1" max="<?= $ivt ?>" class="quantity-selector qty-view">
+                            <input data-id="<?= $p->getId() ?>" type="button" value="+"
+                                   class="qty-btn plus btn-plus-view">
+                        </div>
+                        <div class="btn_choice_box">
+                            <?php
+                            if ($ivt <= 0) { ?>
+                                <button type="button" title="Hết hàng"
+                                        class="btn_add_order buy-now btn_add_cart"
+                                        data-psid="<?= $p->getId() ?>" data-selId="<?= $p->getId() ?>"
+                                        data-ck="0">Mua ngay
+                                </button>
+                                <button type="button" class="btn_add_cart  btn-cart" title="Hết hàng"
+                                        data-psid="<?= $p->getId() ?>" data-selId="<?= $p->getId() ?>"
+                                        data-ck="0">Giỏ hàng
+                                </button>
+                            <?php } else {
+                                if ($flag) { ?>
+                                    <button type="button"
+                                            title="<?= $this->translate('Vui lòng chọn màu sắc hoặc kích cỡ') ?>!"
+                                            class="btn_add_order buy-now btn_add_cart "
+                                            data-psid="<?= $p->getId() ?>" data-selId="<?= $p->getId() ?>"
+                                            data-ck="0">Mua ngay
+                                    </button>
+                                    <button type="button" class="btn_add_cart btn-cart"
+                                            title="<?= $this->translate('Vui lòng chọn màu sắc hoặc kích cỡ') ?>!"
+                                            data-psid="<?= $p->getId() ?>" data-selId="<?= $p->getId() ?>"
+                                            data-ck="0">Giỏ hàng
+                                    </button>
+                                <?php } else if ($flagChild) { ?>
+                                    <button type="button"
+                                            title="<?= $this->translate('Vui lòng chọn sản phẩm') ?>!"
+                                            class="btn_add_order buy-now btn_add_cart"
+                                            data-psid="<?= $p->getId() ?>" data-selId="<?= $p->getId() ?>"
+                                            data-ck="0">Mua ngay
+                                    </button>
+                                    <button type="button" class="btn_add_cart btn-cart"
+                                            title="<?= $this->translate('Vui lòng chọn sản phẩm') ?>!"
+                                            data-psid="<?= $p->getId() ?>" data-selId="<?= $p->getId() ?>"
+                                            data-ck="0">Giỏ hàng
+                                    </button>
+                                <?php } else { ?>
+                                    <button type="button" class="btn_add_order buy-now btn_add_cart"
+                                            data-psid="<?= $p->getId() ?>" data-selId="<?= $p->getId() ?>"
+                                            data-ck="1">Mua ngay
+                                    </button>
+                                    <button type="button" class="btn_add_cart btn-cart" data-psid="<?= $p->getId() ?>"
+                                            data-selId="<?= $p->getId() ?>"
+                                            data-ck="1">Giỏ hàng
+                                    </button>
+                                <?php }
+                            }
+                            ?>
+                        </div>
+                        <div class="add-to-wishlist-buttonstyles__Wrapper-sc-1voony3-0 hQLXbw">
+                            <button id="wishlist_heart_pdp" aria-label="Thêm vào danh sách yêu thích"
+                                    class="sc-Axmtr fpbHys sc-prQdK inVUC wishlist-product">
+                                <a class=" wishlist-product" href="javascript:void(0)" psId="<?= $p->getId() ?>">
+                                    <i class="far fa-heart"></i>
+                                </a>
+                                <span class="sc-qYhTA dLAucL"><span style="vertical-align: inherit;"><span
+                                                style="vertical-align: inherit;">Danh sách yêu thích</span></span></span>
+                            </button>
+                        </div>
+                        <article class="Styles__AccordionItem-su8qjo-2 hzlJil">
+                            <button type="button" aria-label="Sự mô tả">
+                                <h5 id="highlinght">
+                                    <span style="vertical-align: inherit;"><?= $this->translate('Đặc điểm nổi bật') ?></span>
+                                    <i class="far fa-minus"></i>
+                            </button>
+                            <div class="description-content">
+                                <div class="description-productdetail"><?= $p->getHighlight() ?></div>
+                            </div>
+                        </article>
+                        <section class="Styles__AccordionWrap-su8qjo-0 dRNdkN">
+                            <article class="Styles__AccordionItem-su8qjo-2 hzlJil">
+                                <button type="button" aria-label="Sự mô tả">
+                                    <h5 id="description">
+                                        <span style="vertical-align: inherit;"><?= $this->translate('Mô tả') ?></span>
+                                        <i class="far fa-plus"></i>
+                                    </h5>
+                                    <!--                                    <i class="fal fa-plus"></i>-->
+                                </button>
+                                <div class="description-content">
+                                    <div class="description-productdetail"><?= $p->getDescription() ?></div>
+                                </div>
+                            </article>
+
+                            <article class="Styles__AccordionItem-su8qjo-3 hzlJil">
+                                <button type="button" aria-label="Giao hàng &amp; Trả hàng">
+                                    <h5 id="ship">
+                                        <span style="vertical-align: inherit;">Ưu đãi vận chuyển
+                                        </span>
+                                        <i class="far fa-plus"></i>
+                                    </h5>
+                                    <!--                                    <i class="fal fa-plus"></i>-->
+                                </button>
+                                <div class="">
+                                    <?= $this->template()->loadValue('DELIVERY_CONTENT') ?>
+                                </div>
+                            </article>
+                        </section>
+
+                    </div>
+
+                </div>
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane active" id="home">
+                        <?php
+                        if ($p->getContent()) {
+                            echo $p->getContent();
+                        } else {
+                            echo 'Đang cập nhật chi tiết sản phẩm';
+                        }
+
+                        ?>
+                    </div>
+                </div>
+                <div class="product-rating pt-30 pb-65">
+                    <div class="hrt" id="danhgia">
+                        <div class="star-box" id="star-box">
+                            <div class="heading">
+                                <p class="heading-title">Đánh giá <span
+                                            class="hidden-md-up">(<?= $countRating ?>)</span></p>
+                            </div>
+                            <div class="star-average">
+                                <?php
+                                $unstar = 5 - $ratePview;
+                                ?>
+                                <div class="rating-left">
+                                    <div class="rl-item">
+                                        <div class="totalRate"><?= $countRating ?> đánh giá</div>
+                                        <div class="number-rate">
+                                            <?= ($ratePview > 0) ? $ratePview : 0 ?>.0
+                                        </div>
+                                        <div class="star">
+                                            <?php for ($i = 1; $i <= $ratePview; $i++) { ?>
+                                                <i class="fas fa-star"></i>
+                                            <?php } ?>
+                                            <?php for ($i = 1; $i <= $unstar; $i++) { ?>
+                                                <i class="far fa-star"></i>
+                                            <?php } ?>
+                                        </div>
+                                    </div>
+                                    <div class="rl-item">
+                                        <div class="row gx-3 gy-12">
+                                            <?php
+                                            $userRating = $this->social()->userRating($p->getId());
+                                            $points = [];
+                                            $ratePosition = [6, 5, 4, 3, 2, 1];
+                                            if ($userRating) {
+                                                $totalUserCm = 0;
+                                                foreach ($userRating as $ur) {
+                                                    $totalUserCm += $ur->getTotalUser();
+                                                }
+                                                foreach ($userRating as $ur) {
+                                                    $percen = round(($ur->getTotalUser() / $totalUserCm) * 100);
+                                                    ?>
+                                                    <div class="col-11 col-sm-11 col-md-12"
+                                                         style="order: <?= $ratePosition[$ur->getPoints()] ?>">
+                                                        <div class="row align-items-center mb-1 gx-3">
+                                                            <div class="col-2">
+                                                                <span class="star-type left"><?= $ur->getPoints() ?> sao</span>
+                                                            </div>
+                                                            <div class="col-10">
+                                                                <div class="row align-items-center gx-3">
+                                                                    <div class="col-11">
+                                                                        <div class="progress-sell">
+                                                                            <div class="progress-sell-bar bg-danger"
+                                                                                 role="progressbar"
+                                                                                 style="width: <?= $percen ?>%;"
+                                                                                 aria-valuenow="59" aria-valuemin="0"
+                                                                                 aria-valuemax="100"></div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-1">
+                                                                        <span class="star-type right "><?= $ur->getTotalUser() ?></span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <?php
+                                                    $points[] = $ur->getPoints();
+                                                    ?>
+                                                    <?php
+                                                }
+                                            } ?>
+                                            <?php
+                                            if (!in_array(5, $points)) { ?>
+                                                <div class="col-11 col-sm-11 col-md-12" style="order: 1">
+                                                    <div class="row align-items-center mb-1 gx-3">
+                                                        <div class="col-2">
+                                                            <span class="star-type left">5 sao</span>
+                                                        </div>
+                                                        <div class="col-10">
+                                                            <div class="row align-items-center gx-3">
+                                                                <div class="col-11">
+                                                                    <div class="progress-sell">
+                                                                        <div class="progress-sell-bar bg-danger"
+                                                                             role="progressbar" style="width: 0%;"
+                                                                             aria-valuenow="59" aria-valuemin="0"
+                                                                             aria-valuemax="100"></div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-1">
+                                                                    <span class="star-type right ">0</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <?php
+                                            }
+                                            if (!in_array(4, $points)) { ?>
+                                                <div class="col-11 col-sm-11 col-md-12" style="order: 2">
+                                                    <div class="row align-items-center mb-1 gx-3">
+                                                        <div class="col-2">
+                                                            <span class="star-type left">4 sao</span>
+                                                        </div>
+                                                        <div class="col-10">
+                                                            <div class="row align-items-center gx-3">
+                                                                <div class="col-11">
+                                                                    <div class="progress-sell">
+                                                                        <div class="progress-sell-bar bg-danger"
+                                                                             role="progressbar" style="width: 0%;"
+                                                                             aria-valuenow="59" aria-valuemin="0"
+                                                                             aria-valuemax="100"></div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-1">
+                                                                    <span class="star-type right ">0</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <?php
+                                            }
+                                            if (!in_array(3, $points)) { ?>
+                                                <div class="col-11 col-sm-11 col-md-12" style="order: 3">
+                                                    <div class="row align-items-center mb-1 gx-3">
+                                                        <div class="col-2">
+                                                            <span class="star-type left">3 sao</span>
+                                                        </div>
+                                                        <div class="col-10">
+                                                            <div class="row align-items-center gx-3">
+                                                                <div class="col-11">
+                                                                    <div class="progress-sell">
+                                                                        <div class="progress-sell-bar bg-danger"
+                                                                             role="progressbar" style="width: 0%;"
+                                                                             aria-valuenow="59" aria-valuemin="0"
+                                                                             aria-valuemax="100"></div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-1">
+                                                                    <span class="star-type right ">0</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <?php
+                                            }
+                                            if (!in_array(2, $points)) { ?>
+                                                <div class="col-11 col-sm-11 col-md-12" style="order: 4">
+                                                    <div class="row align-items-center mb-1 gx-3">
+                                                        <div class="col-2">
+                                                            <span class="star-type left">2 sao</span>
+                                                        </div>
+                                                        <div class="col-10">
+                                                            <div class="row align-items-center gx-3">
+                                                                <div class="col-11">
+                                                                    <div class="progress-sell">
+                                                                        <div class="progress-sell-bar bg-danger"
+                                                                             role="progressbar" style="width: 0%;"
+                                                                             aria-valuenow="59" aria-valuemin="0"
+                                                                             aria-valuemax="100"></div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-1">
+                                                                    <span class="star-type right ">0</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <?php
+                                            }
+                                            if (!in_array(1, $points)) { ?>
+                                                <div class="col-11 col-sm-11 col-md-12" style="order: 5">
+                                                    <div class="row align-items-center mb-1 gx-3">
+                                                        <div class="col-2">
+                                                            <span class="star-type left">1 sao</span>
+                                                        </div>
+                                                        <div class="col-10">
+                                                            <div class="row align-items-center gx-3">
+                                                                <div class="col-11">
+                                                                    <div class="progress-sell">
+                                                                        <div class="progress-sell-bar bg-danger"
+                                                                             role="progressbar" style="width: 0%;"
+                                                                             aria-valuenow="59" aria-valuemin="0"
+                                                                             aria-valuemax="100"></div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-1">
+                                                                    <span class="star-type right ">0</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            <?php }
+                                            ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="comment-wrapper">
+                            <div class="heading d-flex justify-content-between">
+                                <p class="heading-title d-flex justify-content-between">
+                                    Bình luận (<?= $countRating ?>)
+
+                                </p>
+                                <div class="modal fade" id="popupRatingNormal">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-body"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php
+                            $rates = $this->social()->searchProductRates(['productId' => $p->getId(), 'limit' => 10]);
+                            if ($rates) { ?>
+                                <div class="rating-comment-block review-slider">
+                                    <?php
+                                    foreach ($rates as $r) {
+                                        ?>
+                                        <div class="rating-comment">
+                                            <div class="commentProduct-content">
+                                                <div class="commentator">
+                                                    <span class="star_day_name">
+                                                <span class="starbap-rev__rating voteView<?= $r->getPoints() ?>">
+                                                            <a class="starbap-star starbap--off star-1">
+                                                            <i class="fas fa-star"></i>
+                                                            </a>
+                                                            <a class="starbap-star starbap--off star-2">
+                                                       <i class="fas fa-star"></i>
+                                                    </a>
+                                                            <a class="starbap-star starbap--off star-3">
+                                                       <i class="fas fa-star"></i>
+                                                    </a>
+                                                            <a class="starbap-star starbap--off star-4">
+                                                     <i class="fas fa-star"></i>
+                                                    </a>
+                                                            <a class="starbap-star starbap--off star-5">
+                                                       <i class="fas fa-star"></i>
+                                                    </a>
+                                                </span>
+                                                    </span>
+                                                    <span class="rv-date"><?= date("d-m-Y", strtotime($r->getCreatedDate())) ?></span>
+                                                    <div class="mb-0"><?= $r->getCommentator() ?></div>
+                                                </div>
+                                                <p class="commentContent"><?= $r->getComment() ?></p>
+                                            </div>
+                                        </div>
+                                    <?php } ?>
+                                </div>
+                            <?php } ?>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-12 col-lg-12 col-md-12 col-sm-12 feedback">
+                    <div role="tabpanel" class="mt20" id="tabDetails">
+                        <ul id="tabNav" class="nav nav-tabs navShow prdView" role="tablist">
+                            <li id="rmt" role="presentation" class="active">
+                                <a href="#tab_3" aria-controls="tab_3" role="tab" data-toggle="tab"
+                                   aria-expanded="true">
+                                    <span><?= $this->template()->loadValue('TAB_3_TITLE') ?></span>
+                                </a></li>
+                        </ul>
+                        <div class="tab-content">
+                            <div role="tabpanel" class="tab-pane active" id="tab_3">
+                                <form action="" method="post" class="rate-form">
+                                    <div style="font-weight: bold;margin: 25px 0;">
+                                        <span>1.<?= $this->translate('Đánh giá sản phẩm'); ?>                                 </span>
+                                        <p class="vote" style="margin: 5px 0">
+                                            <span class="si" data-rate="1"></span>
+                                            <span class="si" data-rate="2"></span>
+                                            <span class="si" data-rate="3"></span>
+                                            <span class="si" data-rate="4"></span>
+                                            <span class="si" data-rate="5"></span>
+                                            <i class="clearfix"></i></p></div>
+                                    <div>
+                                        <span>2. <?= $this->translate('Nội dung đánh giá'); ?></span>
+                                        <span id="digitComment"
+                                              style="float: right;padding: 0 20px;font-size: 12px;">0 ký tự</span><textarea
+                                                id="comment" class="input"
+                                                placeholder="<?= $this->translate('Nhập nội dung đánh giá'); ?>"></textarea>
+                                    </div>
+                                    <div id="btnRate">
+                                        <?php
+                                        if ($this->user()->hasIdentity()) {
+                                            echo '<button data-pid="' . $p->getId()
+                                                . '" data-storeId ="' . $p->getStoreId()
+                                                . '" class="btnRed btnColor" style="padding:10px;display: inline-block;white-space: nowrap;">'
+                                                . $this->translate('Gửi đánh giá')
+                                                . '</button>';
+                                        } else {
+                                            echo '<a href="/user/signin" class="btnSignin btnRed btnColor" style="padding:10px;display: inline-block;white-space: nowrap;">'
+                                                . $this->translate('Đăng nhập để đánh giá') . '</a>';
+                                        }
+                                        ?>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="related-product">
+                <div class="related-product-main">
+                    <div class="title-product-bottom">
+                        <h1>Sản phẩm liên quan</h1>
+                    </div>
+                    <div class="recommenderstyles__ProductRecommender-z4i17m-0 hDrujI">
+                        <div class="productsstyles__Wrapper-atvddt-2 GNshY">
+                            <section class="Styles__Carousel-zdvvw4-0 ioyiJG">
+                                <div class="Styles__ItemsWrapper-zdvvw4-2 eglkqQ">
+                                    <?php
+                                    $productRelated = $this->product()->search(['limit' => '9', 'categoryId' => $p->getCategoryId(), 'excludedIds' => $p->getId(),]);
+                                    if ($productRelated) {
+                                        /** @var  $pr \Product\Model\Store */
+                                        foreach ($productRelated as $pr) {
+                                            $priceDiscount = $pr->getPriceAfterDiscount();
+                                            $percent = $pr->calcDiscountPercent();
+                                            $oldPrices = $p->getOldPrice();
+                                            ?>
+                                            <div class="product-new-list col-lg-3 col-md-4 col-sm-6 col-6 "
+                                                 data-id="<?= $pr->getId() ?>" data-storeId="<?= $pr->getStoreId() ?>">
+                                                <div class="product-women">
+                                                    <div data-product-id="<?= $pr->getId() ?>"
+                                                         class="product-women-img1">
+                                                        <a href="<?= $pr->getViewLink() ?>"
+                                                           class="grid-view-item__link">
+                                                            <picture>
+                                                                <source class="imglarge"
+                                                                        data-srcset="<?= $pr->getThumbnailUri() ?>"
+                                                                        media="(max-width: 767px)">
+
+                                                                <source class="imgsmall"
+                                                                        data-srcset="<?= $pr->getThumbnailUri() ?>"
+                                                                        media="(min-width: 768px)">
+
+                                                                <img class="img-loop lazyload dt-width-100" width="100%"
+                                                                     height="300px"
+                                                                     src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAANSURBVBhXYzh8+PB/AAffA0nNPuCLAAAAAElFTkSuQmCC"
+                                                                     alt="<?= $pr->getName() ?>"/>
+                                                            </picture>
+                                                        </a>
+                                                        <a class="wishlist-btn wishlist-product"
+                                                           href="javascript:void(0)" psId="<?= $pr->getId() ?>">
+                                                            <i class="far fa-heart"></i>
+                                                        </a>
+                                                    </div>
+                                                    <div class="button-add tp_button">
+                                                        <button title="Xem nhanh" class="action quick-view"
+                                                                data-id="<?= $pr->getId() ?>">
+                                                            <span>Xem nhanh</span>
+                                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                                 xmlns:xlink="http://www.w3.org/1999/xlink"
+                                                                 version="1.1" id="Capa_1" x="0px" y="0px"
+                                                                 viewBox="0 0 59.2 59.2"
+                                                                 style="enable-background:new 0 0 59.2 59.2;"
+                                                                 xml:space="preserve"><g>
+                                                                    <path d="M51.062,21.561c-11.889-11.889-31.232-11.889-43.121,0L0,29.501l8.138,8.138c5.944,5.944,13.752,8.917,21.561,8.917   s15.616-2.972,21.561-8.917l7.941-7.941L51.062,21.561z M49.845,36.225c-11.109,11.108-29.184,11.108-40.293,0l-6.724-6.724   l6.527-6.527c11.109-11.108,29.184-11.108,40.293,0l6.724,6.724L49.845,36.225z"/>
+                                                                    <path d="M28.572,21.57c-3.86,0-7,3.14-7,7c0,0.552,0.448,1,1,1s1-0.448,1-1c0-2.757,2.243-5,5-5c0.552,0,1-0.448,1-1   S29.125,21.57,28.572,21.57z"/>
+                                                                    <path d="M29.572,16.57c-7.168,0-13,5.832-13,13s5.832,13,13,13s13-5.832,13-13S36.741,16.57,29.572,16.57z M29.572,40.57   c-6.065,0-11-4.935-11-11s4.935-11,11-11s11,4.935,11,11S35.638,40.57,29.572,40.57z"/>
+                                                                </g></svg>
+                                                        </button>
+                                                        <?php
+                                                        if ($pr->getParentId() == $pr::PS_PARENT_ROOT) {
+                                                            echo '<button title="Mua ngay" class="action add-to-cart" onclick="location.href=' . "'" . ($p->getViewLink()) . "'" . '">';
+                                                        } else {
+                                                            echo '<button title="Mua ngay" class="action add-to-cart flytocart" data-buy="1" data-psId="' . $p->getId() . '">';
+                                                        }
+                                                        ?>
+                                                        <span>Mua ngay</span>
+                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                             xmlns:xlink="http://www.w3.org/1999/xlink"
+                                                             version="1.1" id="Capa_1" x="0px" y="0px"
+                                                             width="27.948px" height="27.948px"
+                                                             viewBox="0 0 27.948 27.948"
+                                                             style="enable-background:new 0 0 27.948 27.948;"
+                                                             xml:space="preserve"><g>
+                                                                <path d="M9.689,19.484h15.503v1.936H8.133L4.99,7.153h-4.3V5.218h5.854L9.689,19.484z M11.45,22.708   c-1.447,0-2.62,1.172-2.62,2.619c0,1.446,1.173,2.621,2.62,2.621c1.447,0,2.62-1.175,2.62-2.621   C14.07,23.88,12.897,22.708,11.45,22.708z M22.25,22.708c-1.445,0-2.619,1.172-2.619,2.619c0,1.446,1.174,2.621,2.619,2.621   c1.447,0,2.621-1.175,2.621-2.621C24.872,23.88,23.698,22.708,22.25,22.708z M10.668,18.035L8.37,6.133h3.76L20.463,0l3.729,5.064   l-0.161,1.069h3.227l-2.687,11.902H10.668z M23.584,5.477l-0.892,0.656h0.794L23.584,5.477z M13.038,6.132h1.958l-0.117-0.16   l0.379-0.279l0.324,0.439h0.48L15.57,5.463l0.38-0.279l0.697,0.948h0.544l-0.89-1.207l0.381-0.279l1.095,1.486h0.626l-1.301-1.768   l0.379-0.28l1.507,2.048h0.544l-1.697-2.308l0.379-0.278l1.902,2.586h1.668l1.639-1.205l-3.07-4.176L13.038,6.132z M21.75,5.305   l-2.088-2.839l-0.382,0.279l2.089,2.839L21.75,5.305z M21.02,5.845l-2.09-2.84l-0.379,0.279l2.092,2.839L21.02,5.845z"/>
+                                                            </g></svg>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div class="product-caption ">
+                                                    <a class="item-url" href="<?= $p->getViewLink() ?>">
+                                                        <div class="marker new-product">
+                                                            <h3 class="item-title">
+                                                                <a href="<?= $p->getViewLink() ?>"
+                                                                   title="<?= $p->getName() ?>"> <?= $p->getName() ?>
+                                                                </a>
+                                                            </h3>
+                                                        </div>
+                                                        <div class="item-price">
+                                                            <?php
+                                                            if ($priceDiscount > 0) {
+                                                                echo '<span class="pro-price-del"><del class="compare-price tp_product_price_old">' . number_format($p->getPrice()) . $priced . '</del></span>';
+                                                                echo '<span class="tp_product_price price-sale">' . number_format($priceDiscount) . $priced . '</span>';
+                                                            } else if (empty($p->getPrice()) || $p->getPrice() <= 0 || $p->getContactPrice()) {
+                                                                $link = 'javascript:';
+                                                                $taget = '';
+                                                                echo '<a href="' . $link . '" ' . $taget . '><span class="tp_product_price">' . $this->template()->loadValue('PRICE_CONTACT') . '</span></a>';
+                                                            } else {
+                                                                $sale = '';
+                                                                if ($p->getOldPrice()) {
+                                                                    $sale = 'price-sale';
+                                                                    echo '<span class="pro-price-del"><del class="compare-price tp_product_price_old">' . number_format($p->getOldPrice()) . $priced . '</del></span>';
+                                                                }
+                                                                echo '<span class="tp_product_price ' . $sale . '">' . number_format($p->getPrice()) . $priced . '</span>';
+                                                            }
+                                                            ?>
+                                                        </div>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <?php
+                                        }
+                                    }
+                                    ?>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>

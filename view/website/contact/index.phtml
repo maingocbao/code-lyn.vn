@@ -1,0 +1,95 @@
+<?php
+$storeId = $GLOBALS['domainConfigs']['storeId'];
+$this->headTitle($this->translate('Liên hệ'));
+$this->headMeta()->appendName('description', 'lien he');
+$this->headMeta()->appendName('keywords', 'lien he');
+$this->headMeta()->appendProperty('og:title', 'lien he');
+$this->headMeta()->appendProperty('og:type', 'article');
+$this->headTitle($this->template()->loadValue('TITLE_CONTACT'));
+$storeId = $GLOBALS['domainConfigs']['storeId'];
+$this->headLink([
+    'rel' => 'canonical',
+    'href' => getCurrentFullUrl(true) . "/lien-he"
+]);
+$this->headTitle($this->template()->loadValue('TITLE_CONTACT'));
+$this->headScript()->appendFile($this->libs()->srcLink([
+    '/tp/T0367/js/maps.js',
+], 1));
+echo '<input type="hidden" value="'.$_SERVER['REQUEST_URI'].'" class="urlDepot"> ';
+echo '<input type="hidden" value="'.$this->template()->loadValue('AGENCY_WORKING').'" class="timeWork"> ';
+$storeAgencies  = $this->store()->loadStoreAgencies();
+$totalAgencies = $storeAgencies['totalAgencies'];
+$citiesAgencies = $storeAgencies['cities'];
+
+if($totalAgencies <= 0){
+    $totalAgencies = null;
+}
+?>
+?>
+
+
+<div class="layout-pageContact">
+    <div class="container-fluid">
+        <div class="row" style="margin: 0">
+            <div class="col-md-6 col-sm-12 col-xs-12 box-heading-contact">
+                    <div class="about-page__map-content">
+                        <?= $this->template()->loadValue('MAPS') ?>
+                    </div>
+                <div class="detail-address"></div>
+
+            </div>
+            <div class="col-md-6 col-sm-12 col-xs-12  wrapbox-content-page-contact">
+                <div class="header-page-contact clearfix">
+                    <h1><?= $this->translate('Liên hệ') ?></h1>
+                </div>
+                <div class="box-info-contact">
+                    <?= $this->template()->loadValue('INFO_CONTACT_CONTENT') ?>
+                </div>
+
+                <div class="box-send-contact">
+                    <h2>Gửi thắc mắc cho chúng tôi</h2>
+                    <div id="col-left contactFormWrapper">
+                        <form accept-charset='UTF-8' action='/contact' class='contact-form' method='post'>
+                            <div class="contact-form">
+                                <div class="row">
+                                    <div class="col-sm-6 col-xs-6">
+                                        <div class="input-group">
+                                            <input required type="text" class="form-control name_register" placeholder="Tên của bạn">
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6 col-xs-6">
+                                        <div class="input-group">
+                                            <input required type="text" class="form-control address_register" placeholder="Địa chỉ của bạn">
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6 col-xs-12">
+                                        <div class="input-group">
+                                            <input required pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$"
+                                                   type="email" class="form-control email_register" placeholder="Email của bạn">
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6 col-xs-12">
+                                        <div class="input-group">
+                                            <input pattern="[0-9]{10,12}" maxlength="10" minlength="10"
+                                                   required type="tel" class="form-control mobile_register"
+                                                   placeholder="Số điện thoại của bạn">
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-12 col-xs-12">
+                                        <div class="input-group">
+                                            <textarea class="content_register" placeholder="Nội dung"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-12">
+                                        <button type="button" class="dark send_contact">Gửi cho chúng tôi</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

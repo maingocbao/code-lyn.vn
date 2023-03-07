@@ -1,0 +1,10 @@
+<?php
+$wishlist = $this->product()->getWishlistCookie();
+if($wishlist){
+    $i = 0;
+    foreach ($wishlist as $w){
+        $i++;
+    }
+    echo($i);
+
+}

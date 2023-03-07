@@ -1,0 +1,116 @@
+<?php
+$this->layout('/layout/layoutnews');
+$storeId = $GLOBALS['domainConfigs']['storeId'];
+$this->headTitle($this->translate('Tin tức'));
+$this->headMeta()->appendName('keywords', $this->template()->loadValue('META_KEYWORDS'));
+$this->headMeta()->appendName('description', $this->template()->loadValue('META_DESCRIPTION'));
+$this->headMeta()->appendProperty('og:title', $this->template()->loadValue('META_TITLE'));
+$this->headMeta()->appendProperty('og:url', 'http://' . $_SERVER['HTTP_HOST']);
+$this->headMeta()->appendProperty('og:type', '');
+$this->headLink([
+    'rel' => 'canonical',
+    'href' => getCurrentFullUrl(true) . "/news"
+]);
+$bnBannerNews = $this->store()->getCurrentBannerByCode('BANNER_NEWS_HOME', ['limit' => 1]);
+$paginator = $this->paginator;
+$paginator->setItemCountPerPage($this->uriParams()->getRequest()->getQuery('icpp') ?: 24);
+$paginator->setPageRange(5);
+$categories = $this->newsCategory()->getCategories();
+$idNew = $this->template()->loadValue('ID_NEWS_ID');
+if($idNew){
+    $idNew = explode(",", $idNew);
+}
+?>
+<main>
+    <?php
+    if ($bnBannerNews) {
+    foreach ($bnBannerNews as $b1) {
+    ?>
+
+    <div class="ggYzkh"><img
+                src="<?= $b1->getImageSrc() ?>"
+                alt="<?= $b1->getName() ?>"></div>
+    <?php } } ?>
+    <div id="content" class="Content-sc-1tlae3t-2 jWDcIB">
+        <div class="PaginationWrapper-sc-zhmyv0-0 dLBcfK">
+            <section class="Posts-sc-zhmyv0-1 kkJfYC">
+                <?php
+                $newView = $this->news()->getLastestNews([
+                    'limit' => 5
+                ]);
+                if($newView) {
+                    ?>
+                <article id="tile-topics" class="Topics-sc-15m29xd-0 iKcNwf"><h4>Bài viết mới nhất</h4>
+                    <ul>
+                        <?php
+                      /** @var  $lstNews \News\Model\Article */
+                        $i = 0;
+                foreach ($newView as $lstNews) {
+
+                    if(!in_array($lstNews->getId(), $idNew)){
+                        $i++;
+                    ?>
+                        <div class="Parent-sc-15m29xd-1 ekDKJi" >
+                            <div class="Image-sc-15m29xd-2 cEYUia">
+                                <picture>
+                                    <source class="imglarge" data-srcset="<?= $lstNews->getPictureUri() ?>" media="(max-width: 767px)">
+
+                                    <source class="imgsmall" data-srcset="<?= $lstNews->getPictureUri() ?>" media="(min-width: 768px)">
+
+                                    <img class="img-loop lazyload dt-width-100" width="100%" height="132px" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAANSURBVBhXYzh8+PB/AAffA0nNPuCLAAAAAElFTkSuQmCC" alt="" />
+                                </picture>
+                                <span><?= $i ?></span>
+                            </div>
+                            <div class="Info-sc-15m29xd-3 dllwHL"><a href="<?=$lstNews->getViewLink()?>"><h5><?= $lstNews->getTitle() ?></h5>
+                        </div>
+                        </div>
+                            <?php }
+                }
+
+                ?>
+
+                    </ul>
+                </article>
+
+                <?php }
+                /** @var \News\Model\Article $n */
+                foreach ($paginator as $n) {
+                if(!in_array($lstNews->getId(), $idNew)){
+                    ?>
+                <article id="tile-3IKOB6lVF3AKlXJoT2wuYq" class="TileWrapper-sc-aw78hl-0 kEUIkN">
+                    <div class="ImageWrapper-sc-aw78hl-1 gayPdQ">
+                        <a href="<?= $n->getViewLink() ?> "  title="<?= $n->getTitle() ?>">
+                            <picture>
+                                <source class="imglarge" data-srcset="<?= $n->getPictureUri() ?>" media="(max-width: 767px)">
+
+                                <source class="imgsmall" data-srcset="<?= $n->getPictureUri() ?>" media="(min-width: 768px)">
+
+                                <img class="img-loop lazyload dt-width-100" width="100%" height="300px" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAANSURBVBhXYzh8+PB/AAffA0nNPuCLAAAAAElFTkSuQmCC" alt="" />
+                            </picture>
+                        </a>
+                    </div>
+                    <div class="ContentWrapper-sc-aw78hl-2 eSRqEO">
+                        <div class="Heading-sc-cmrb08-0 cDexsf">
+                            <a href="<?= $n->getViewLink() ?> "  title="<?= $n->getTitle() ?>"><span
+                                        class="TitleLink-sc-cmrb08-2 hXkhdv"><h3><?= $n->getTitle() ?></h3></span></a>
+                            <p class="Caption-sc-cmrb08-3 gvNRVK"><?=strip_tags($n->getIntro(true))?></p></div>
+                    </div>
+                    <div class="Footer-sc-aw78hl-3 cnKova">
+                        <div class="Date-sc-z4ng8n-0 ednsIo"><i class="fal fa-alarm-clock"></i><span><?= date('d.m.Y', strtotime($n->getCreatedDateTime())) ?></span>
+                        </div>
+                    </div>
+                </article>
+                <?php } } ?>
+
+
+            </section>
+<!--            <a id="load-more" type="button" href="/?page=2" class="Anchor-sc-ot3r9k-1 imNgOM">load more</a></div>-->
+            <div class="sortpagibar pagi clearfix text-center">
+                <?php
+                if ($paginator) {
+                    echo $this->paginationControl($paginator, 'Sliding', 'partial/paginatorBoostrap');
+                }
+                ?>
+            </div>
+    </div>
+</main>

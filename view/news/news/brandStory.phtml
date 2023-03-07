@@ -1,0 +1,21 @@
+<?php
+$storeId = $GLOBALS['domainConfigs']['storeId'];
+/* @var $news \News\Model\Article */
+$news = $this->news;
+
+$tags = $news->getTags();
+$this->headTitle($this->translate($news->getSourceLink() ?: $news->getTitle()));
+$this->headMeta()->appendName('description', ($news->getMetaDescription() ?: $news->getTitle()));
+$this->headMeta()->appendName('keywords', ($news->getMetaKeywords() ?: $news->getTitle()));
+$this->headMeta()->appendProperty('og:title', ($news->getSourceLink() ?: $news->getTitle()));
+$this->headMeta()->appendProperty('og:type', 'news');
+$this->headMeta()->appendProperty('og:image', $news->getPictureUri());
+$this->headMeta()->appendProperty('og:url', getCurrentFullUrl());
+$this->headLink([
+    'rel' => 'canonical',
+    'href' => getCurrentFullUrl(true) . $news->getViewLink()
+]);
+?>
+<div class="container">
+    <?= $news->getContent()?>
+</div>

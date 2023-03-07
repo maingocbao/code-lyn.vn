@@ -1,0 +1,389 @@
+
+.mainContent-theme {
+    margin: 50px 0 50px 0;
+}
+@media (min-width: 1200px) {
+    .container-fluid {
+        max-width: 1600px;
+        padding: 0 90px;
+    }
+}
+
+@media screen and (max-width: 992px) {
+    .signup-flex {
+        display: block !important;
+    }
+
+    .wrapbox-content-account {
+        padding: 10px !important;
+    }
+
+    .header-user-singnup:after {
+        margin: 20px auto 0 !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-page .header-user-singnup {
+        font-size: 34px;
+    }
+}
+
+.container-fluid {
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.signup-flex {
+    display: flex;
+}
+
+.wrapbox-heading-account {
+    border-right: 1px solid #ededed;
+}
+
+.header-page {
+    align-items: center;
+    justify-content: center;
+    display: flex;
+}
+
+.header-page {
+    height: 100%;
+}
+
+.header-user-singnup {
+    font-size: 44px;
+    font-weight: 700;
+}
+
+.header-user-singnup:after {
+    content: "";
+    background: #000;
+    display: block;
+    width: 60px;
+    height: 4px;
+    margin-top: 70px;
+}
+
+/*.wrapbox-content-account {*/
+/*    padding: 100px;*/
+/*}*/
+
+input#fullName, input#email, input#password, input#mobile, input#date, input#address, input#username, input#newpassword {
+    width: 100%;
+    height: 44px;
+    background-color: #ededed;
+    border: none;
+    font-size: 16px;
+    padding: 0 20px;
+    margin-bottom: 20px;
+}
+
+#create_customer {
+    padding: 40px;
+}
+@media (max-width: 768px) {
+    #create_customer {
+        padding: 10px;
+    }
+}
+
+.userbox .action_bottom {
+    padding: 0;
+}
+
+.action_bottom {
+    border-bottom: 1px solid #e8e8e8;
+    padding-bottom: 10px !important;
+    margin-bottom: 20px;
+}
+
+form#create_customer select, form#create_customer input {
+    margin-bottom: 5px;
+}
+
+#btnSingup {
+    width: 100%;
+    height: 50px;
+    font-size: 15px;
+    text-transform: uppercase;
+    padding: 0 16px !important;
+    line-height: 20px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    display: inline-block;
+    background: #000;
+    color: #fff;
+}
+
+#btnSignIn {
+    width: 100%;
+    height: 50px;
+    font-size: 15px;
+    text-transform: uppercase;
+    padding: 0 16px !important;
+    line-height: 20px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    display: inline-block;
+    background: #000;
+    color: #fff;
+}
+
+.divider {
+    position: relative;
+    text-align: center;
+    margin: 10px 0 30px 0;
+    min-height: 20px;
+}
+
+.divider span {
+    background: #fff;
+    z-index: 999;
+    position: absolute;
+    top: 50%;
+    padding: 0 10px;
+    left: 46%;
+}
+
+@media (max-width: 991px) {
+    .divider span {
+        left: 43%;
+    }
+}
+
+.divider:after {
+    content: '';
+    height: 9px;
+    border-bottom: 2px solid #a4a4a4;
+    position: absolute;
+    top: 50%;
+    right: 0;
+    left: 0;
+}
+
+.login-social {
+    background: #385898;
+    padding: 15px 0;
+    text-align: center;
+}
+
+.login-social * {
+    font-size: 15px;
+    color: #fff;
+}
+
+.login-social i {
+    padding: 0 10px;
+}
+.header-user-forgot-password {
+    font-size: 22px;
+    font-weight: 700;
+    text-transform: uppercase;
+    line-height: 30px;
+    display: block;
+    white-space: normal;
+    vertical-align: middle;
+}
+.header-user-forgot-password:after {
+    content: "";
+    background: #000;
+    display: block;
+    width: 60px;
+    height: 4px;
+    margin-top: 70px;
+}
+#customer_login ul li.btns input {
+    width: 100%;
+}
+
+#customer_login ul li.btns input, #create_customer ul li.btns input {
+    border: none;
+    display: inline-block;
+    border-radius: 0;
+    background: #252a2b;
+    padding: 0 30px;
+    height: 55px;
+    line-height: 55px;
+    color: #fff;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+.forgot-password {
+    margin: 50px 0 50px 0;
+}
+/*--------------------profile-----------------------*/
+.container > .row, .wrapper-home-service {
+    margin-top: 30px;
+}
+
+.menuPv {
+    margin-left: 15px;
+}
+
+.menuPv {
+    padding: 0 !important;
+}
+
+.userList > a {
+    display: block;
+    padding: 0 0 20px;
+}
+
+#profileContent > h1 {
+    font-weight: 700;
+    font-size: 36px;
+    margin: 0 0 20px;
+}
+
+.userIndex {
+    background: #eee;
+    padding: 20px;
+    float: left;
+    width: 100%;
+    clear: both;
+    margin: 0 0 20px;
+}
+
+.userList1 h2 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.userList1 span:nth-child(1) {
+    padding-bottom: 5px;
+}
+
+.userList1 span {
+    display: block;
+}
+
+.userList1 span {
+    display: block;
+}
+
+#profileIf > .userProfile {
+    float: left;
+    width: 100%;
+    clear: both;
+    margin: 0 0 15px;
+}
+
+.userProfile > h3 {
+    font-size: 20px;
+}
+
+#profileContent > h1 {
+    font-weight: 700;
+    font-size: 36px;
+    margin: 0 0 20px;
+}
+
+.desUserIndex {
+    margin: 24px 0 34px;
+}
+
+.itemsPr span:nth-child(1) {
+    color: #b6b4b4;
+    padding-bottom: 5px;
+}
+
+.itemsPr span {
+    display: block;
+}
+
+@media screen and (min-width: 1200px) {
+    .itemsPr span:nth-child(2) {
+        width: 70%;
+    }
+}
+
+.itemsPr span:nth-child(2) {
+    padding-bottom: 10px;
+    border-bottom: 2px solid #000;
+    margin-bottom: 10px;
+}
+
+.inputDateEdit {
+    display: block;
+    border: none;
+    width: 100%;
+}
+
+#profileIf form.profile .itemsPr input[type=text] {
+    border: none;
+    background: 0 0;
+}
+
+#profileIf form.profile .itemsPr select {
+    background: 0 0;
+    border: none;
+    width: 100%;
+}
+
+.btnGreen {
+    padding: 10px 25px;
+    background: #000;
+    text-transform: uppercase;
+    font-size: 15px;
+    color: #fff;
+    margin: 30px 0 0;
+    display: inline-block;
+    border: none;
+}
+
+#profileContent > h1 {
+    font-weight: 700;
+    font-size: 36px;
+    margin: 0 0 20px;
+}
+
+.orderContent {
+    float: left;
+    width: 100%;
+    background: #eee;
+    padding: 15px;
+}
+
+.orderContent .cart_header_labels, .orderContent .list_product_cart {
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+
+@media (min-width: 1200px) {
+    .hidden-lg {
+        display: none !important;
+    }
+}
+
+/*--------------------end-profile-----------------------*/
+/*dổi mk*/
+#headerProfile h3{
+    font-size: 14px;
+}
+#avatarProfile img{
+    width: 100px;
+}
+.section-title{
+    font-size: 16px;
+    font-weight: 600;
+}
+@media (max-width: 992px) {
+  #profileIf  #formAcount .inputAccount{
+        width: 100%;
+    }
+
+#profileIf  .form-group .btnAcess{
+        width: 100%;
+    }
+
+}
+
+
+@media (max-width: 992px) {
+    .cart_header_labels{
+        display: none;
+    }
+}

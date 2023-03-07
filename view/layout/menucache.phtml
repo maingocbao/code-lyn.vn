@@ -1,0 +1,63 @@
+<?php
+$storeId = $GLOBALS['domainConfigs']['storeId'];
+$keyMenu = $storeId . "_MAIN_MENU_".$GLOBALS['domainConfigs']['domainId'];
+
+if (!!($cacheResults = $this->template()->getCache($keyMenu))) {
+    echo $cacheResults;
+    return $cacheResults;
+}
+
+$categories = $this->productCategory()->getCategories();
+$cacheResults = '<ul class="menu-block">';
+if ($categories) {
+    foreach ($categories as $cate) {
+        $iconDown='';
+        $cacheResults .= '<li class="menu__item">
+                                            <a class="fyiWko"' . $cate->getId() . '" href="' . $cate->getViewLink() . '" title="'.$cate->getName().'">
+                                                ' . $cate->getName().$iconDown.'
+                                            </a>';
+        if ($cate->getChilds()) {
+            $cacheResults .= ' <div class="menu__content">';
+            $cacheResults .= '<div class="menu-c2">';
+            $cacheResults .= ' <nav class="menu-desktop-left">';
+            $cacheResults .= '<ul class="menu__list menu__list--second">';
+            /** @var  $c \Product\Model\Category */
+            foreach ($cate->getChilds() as $c) {
+                $iconRight='';
+//                if ($c->getChilds()) {
+//                    $iconRight='<i class="fa fa-chevron-right" aria-hidden="true"></i>';
+//                }
+                $cacheResults .= ' <li class="menu__item-third">
+                                                            <a class="menu__color-text" href="' . $c->getViewLink() . '"> '  . $c->getName() .$iconRight. '</a>';
+                if ($c->getChilds()) {
+                    $cacheResults .= '<ul class="menu__item-c3">';
+                    foreach ($c->getChilds() as $c1) {
+                        $cacheResults .= ' <li class="menu-li-c3"><a href="' . $c1->getViewLink() . '" title="' . $c1->getName() . '">' . $c1->getName() . '</a></li>';
+                    }
+                    $cacheResults .= '</ul>';
+                }
+                $cacheResults .= '</li>';
+            }
+            if($cate->getImgUri()) {
+                $cacheResults .= ' <div class="img-menu-desktop-right">';
+                $cacheResults .= '<img data-sizes="auto" class="lazyload" src="/img/lazyLoading.gif"
+                                                         data-src="' . $cate->getImgUri() . '" alt="' . $cate->getName() . '">';
+                $cacheResults .= ' </div>';
+            }
+            $cacheResults .= '</ul>';
+            $cacheResults .= '</nav>';
+            $cacheResults .= '</div>';
+            $cacheResults .= '</div>';
+        }
+        $cacheResults .= '</li>';
+    }
+}
+$cacheResults .= '</ul>';
+
+echo $cacheResults;
+
+// cache 30 phút
+$this->template()->saveCache($keyMenu, $cacheResults, 1800);
+return $cacheResults;
+
+?>

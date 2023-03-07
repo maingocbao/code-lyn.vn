@@ -1,0 +1,34 @@
+<?php
+$categories = $this->newsCategory()->getCategories();
+?>
+
+<header class="header-news tp_menu">
+        <div>
+            <div class="news-logo">
+                <a href="/" class="logo">
+                    <img src="<?= $this->store()->getLogoUri() ?>" alt="<?= $_SERVER['HTTP_HOST'] ?>">
+                </a>
+            </div>
+            <?php if ($categories) { ?>
+                <div class="news-menu">
+                    <div class="Title-sc-11tncvd-3 cSVndi"><span>Menu</span><i class="far fa-angle-down dVtbkC"></i></div>
+                    <ul class="menu-ul_news">
+                         <?php
+                         /* @var $c \Website\Model\News\NewsCategoryModel */
+                         foreach ($categories as $c) { ?>
+                            <li class="tp_menu_item">
+                                <a class="tp_menu_item-a" href="<?= $c->getViewLink() ?>">
+                                    <?php if ($c->getIconUri()) { ?>
+                                        <img src="<?= $c->getIconUri() ?>" alt="<?= $c->getName() ?>">
+                                    <?php } ?>
+                                    <?= $c->getName() ?>
+                                </a>
+
+                            </li>
+                        <?php } ?>
+                    </ul>
+                </div>
+            <?php } ?>
+        </div>
+</header>
+<button class="close-news-mb hidden-md-up"><i class="far fa-times"></i></button>

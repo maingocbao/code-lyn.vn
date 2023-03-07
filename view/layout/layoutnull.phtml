@@ -1,0 +1,93 @@
+<!-- T0361 -->
+<?php echo $this->doctype(); ?>
+<html lang="vi-VN" data-nhanh.vn-template="T0361">
+<head>
+    <?php
+    $storeId = $GLOBALS['domainConfigs']['storeId'];
+    echo $this->template()->showMetaTag();
+    ?>
+    <meta name="google-site-verification" content="XNR-8BMhcJS8io-JeByBX6BKUDDJpkzu13oZrYJ8M7E" />
+
+    <meta charset="utf-8">
+    <?php
+    echo '<meta name="viewport" content="width=device-width, initial-scale=1">';
+    echo $this->headTitle()->setSeparator(' - ');
+    $this->headMeta()->appendName('DC.language', 'scheme=utf-8 content=vi');
+    $this->headMeta()->appendName('SKYPE_TOOLBAR', 'SKYPE_TOOLBAR_PARSER_COMPATIBLE');
+    $appId = $this->store()->getDomain()->getAppId();
+    if($appId){
+        $this->headMeta()->appendProperty('fb:app_id', $appId);
+    }
+    $extraSettings = $this->store()->getDomain()->getExtraSettings();
+    $extraSettingsArray = json_decode($extraSettings, true);
+    if (isset($extraSettingsArray['google']['googleSiteVerification'])) {
+        $this->headMeta()->appendName('google-site-verification', $extraSettingsArray['google']['googleSiteVerification']);
+    }
+    if (isset($extraSettingsArray['gta']['generatedTimeAndAuthor'])) {
+        if ($extraSettingsArray['gta']['generatedTimeAndAuthor'] == 1) {
+            $display = "block";
+        } else {
+            $display = "none";
+        }
+    } else {
+        // hiển thị cho những doanh nghiệp cũ chưa được update.
+        $display = "block";
+    }
+    echo $this->headLink(['rel' => 'shortcut icon', 'type' => 'image/vnd.microsoft.icon', 'href' => $this->store()->getFavicon() ?: '/images/favicon.ico']);
+    echo $this->headmeta();
+    $style1 = [
+        '/css/bootstrap/bootstrap-3.3.5.min.css',
+        '/css/font-awesome.min.css',
+        '/js/jquery/fancybox-2.1.5/source/jquery.fancybox.css',
+        '/css/font.css',
+        '/tp/T0367/css/checkout.css',
+    ];
+    $style2 = [];
+
+    $style = array_merge($style1, $style2);
+    echo '<link rel="stylesheet" href="' . $this->libs()->srcLink($style,1).'" type="text/css">';
+    ?>
+    <?= $this->template()->loadScripts(['positionHead' => true]); ?> </head>
+
+<body  class="template-index tp_background tp_text_color">
+<input type="hidden" class="checkStoreId" value="<?= $storeId ?>">
+<div class="main-body">
+
+    <?php
+    echo $this->content;
+
+    $js1 = array_merge($this->template()->loadJsLanguages(), [
+        '/js/jquery/jquery.min.js',
+        '/js/bootstrap/bootstrap-3.3.5.min.js',
+        '/js/jquery/jquery-ui-1.10.3.custom.min.js',
+        '/js/lib.js',
+        '/js/jquery/jquery.cookie.js',
+        '/js/jquery/fancybox-2.1.5/source/jquery.fancybox.pack.js',
+        '/js/jquery/jquery.number.min.js',
+    ]);
+    $js2 = [];
+    $js = array_merge($js1, $js2);
+    echo '<script type="text/javascript" src="' . $this->libs()->srcLink($js,1).'"></script>';
+    ?>
+</div>
+
+<?php
+
+echo $this->headScript();
+echo $this->inlineScript();
+echo $this->template()->loadScripts();
+echo $this->template()->loadViewMarketingEvent();
+
+list($usec, $sec) = explode(" ", microtime());
+$endTime = ((float)$usec + (float)$sec);
+$unit = ['b', 'kb', 'mb', 'gb', 'tb', 'pb'];
+$memoryUsed = memory_get_usage();
+$memoryUsed = @round($memoryUsed / pow(1024, ($i = floor(log($memoryUsed, 1024)))), 2) . ' ' . $unit[$i];
+
+$generatedTime = $endTime - $GLOBALS['beginTime'];
+$time = round($generatedTime, 2);
+?>
+
+</body>
+</html>
+

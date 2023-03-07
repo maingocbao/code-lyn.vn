@@ -1,0 +1,225 @@
+<?php
+$storeId = $GLOBALS['domainConfigs']['storeId'];
+$this->headTitle('Giỏ hàng');
+
+/* @var \Order\Service\Cart $cartService */
+$cartService = $this->cart()->getServiceCart();
+$this->headLink([
+    'rel' => 'canonical',
+    'href' => getCurrentFullUrl(true) . "/cart"
+]);
+$products = $cartService->getProducts();
+/* @var $p \Product\Model\Store */
+$checkInv = false;
+if ($products) {
+    $checkInv = true;
+    foreach ($products as $p) {
+        if ($p->getInventory()->calcAvailable() <= 0) {
+            $checkInv = false;
+        }
+    }
+}
+$prodIds = [];
+/* @var \Order\Service\Cart $cartService */
+$cartService = $this->cart()->getServiceCart();
+$totalCartMoney = $cartService->getTotalMoney();
+$priced = ' ₫';
+?>
+<?php
+?>
+<main class="">
+    <div id="layout_Cart" class="layout-cart">
+        <div class="main-content-cart">
+            <div>
+                <div class="breadcrumb-shop">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 pd5  ">
+                        <ol class="breadcrumb breadcrumb-arrows">
+                            <li itemprop="itemListElement">
+                                <a itemprop="item" href="/" target="_self"><?= $this->translate('Trang chủ') ?></a>
+                            </li>
+                            <li class="active" itemprop="itemListElement">
+                                <span itemprop="name"><?= $this->translate('Giỏ hàng') ?></span>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="layout-cart">
+                    <div>
+                        <div class="flex-cart">
+                            <div class="col-md-9 col-xs-12">
+                                <h1 class="heading-cart has-notify text-center tp_title"><?= $this->translate('Giỏ hàng') ?></h1>
+
+                                <div class="cart-detail">
+                                    <?php
+                                    $discount = 0;
+                                    $provisional = 0;
+                                    if ($products) { ?>
+                                        <div class="list-pageform-cart">
+                                            <div id="cartformpage">
+                                                <div class="cart-row">
+                                                    <div class="o_cart_table">
+                                                        <?php
+                                                        $t = 1;
+                                                        /** @var  $p \Product\Model\Store */
+                                                        foreach ($products as $p) {
+                                                            $prodIds[] = $p->getId();
+                                                            $t++;
+                                                            $moneyDiscount = $p->getPriceAfterDiscount($p->getQuantity());
+                                                            ?>
+                                                            <div class="item line-item-container item-line-<?= $t ?>">
+                                                                <div class="left">
+                                                                    <div class="item-img">
+                                                                        <a href="<?= $p->getViewLink() ?>">
+                                                                            <img class="img-responsive lazyload"
+                                                                                 src="/img/lazyLoading.gif"
+                                                                                 data-img="<?= $p->getThumbnailUri() ?>"
+                                                                                 data-sizes="auto"
+                                                                                 data-src="<?= $p->getThumbnailUri(); ?>"
+                                                                                 alt="<?= $p->getName() ?>"/>
+                                                                        </a>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="right">
+                                                                    <div class="item-info">
+                                                                        <a href="<?= $p->getViewLink() ?>"
+                                                                           class="tp_product_name">
+                                                                            <?= $p->getName() ?>
+                                                                            <div class="item-desc">
+                                                                                <?php
+                                                                                if ($p->getCode()) {
+                                                                                    echo '<span>MSP: ' . $p->getCode() . ' &nbsp;•&nbsp; </span>';
+                                                                                }
+                                                                                ?>
+                                                                            </div>
+                                                                        </a>
+                                                                        <?php
+                                                                        if ($psGifts = $p->getOption('psGifts')) {
+                                                                            ?>
+                                                                            <div class="selector-gifts">
+                                                                                <div class="product-title"><span
+                                                                                            class="gift">
+                                                                                    <img data-sizes="auto"
+                                                                                         src="/img/lazyLoading.gif"
+                                                                                         class="lazyload"
+                                                                                         data-src="/tp/T0295/img/58863/quatang_baa.png"
+                                                                                         alt="Gift"></span>
+                                                                                </div>
+                                                                                <div class="product-promotion-content">
+                                                                                    <?php
+                                                                                    foreach ($psGifts as $psGift) {
+                                                                                        echo '<i class="fas fa-check"></i> <a href="' . $psGift->getViewLink() . '">' . $psGift->getName() . '</a><br/> ';
+                                                                                    }
+                                                                                    ?>
+                                                                                </div>
+                                                                            </div>
+                                                                            <?php
+                                                                        }
+                                                                        ?>
+                                                                    </div>
+                                                                    <div class="item-quan">
+                                                                        <div class="cart_quality">
+                                                                            <i class="fal fa-minus xi-step-down"
+                                                                               data-id="<?= $p->getId() ?>"></i>
+                                                                            <input size="4" max="1"
+                                                                                   value="<?= $p->getQuantity() ?>"
+                                                                                   class="qty p-input quantity-number line-item-qty product_<?= $p->getId() ?>">
+                                                                            <i class="fal fa-plus xi-step-up"
+                                                                               data-id="<?= $p->getId() ?>"></i>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="item-price-cart">
+                                                                <span class="price_item">
+                                                                    <?php
+                                                                    if ($moneyDiscount) {
+                                                                        echo '<span class="tp_product_price">' . number_format($moneyDiscount) . $priced . '</span>';
+                                                                    } else if (empty($p->getPrice()) || $p->getPrice() <= 0 || $p->getContactPrice()) {
+                                                                        echo '<span class="tp_product_price">' . $this->template()->loadValue('PRICE_CONTACT') . '</span>';
+                                                                    } else {
+                                                                        echo '<span class="tp_product_price">' . number_format($p->getPrice()) . $priced . '</span>';
+                                                                    }
+                                                                    ?>
+                                                                </span>
+                                                                    </div>
+                                                                    <div class="item-total-price">
+                                                                        <div><span><?= $this->translate('Thành tiền') ?>:</span>
+                                                                            <span class="line-item-total"> <?= number_format($p->getTotalPriceAfterDist()) . $priced ?></span>
+                                                                        </div>
+                                                                        <a class="remove removeCart"
+                                                                           data-id="<?= $p->getId() ?>"><?= $this->translate('Xóa') ?></a>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <?php
+                                                        }
+                                                        ?>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <?php
+                                    } else {
+                                        ?>
+                                        <div class="empty-page-cart">
+                                            <p class="text-center"><?= $this->translate('Không có sản phẩm nào trong giỏ hàng của bạn') ?>
+                                                !</p>
+                                            <p class="text-center">
+                                                <a href="/" class="tp_title">
+                                                    <i class="fal fa-reply"></i>
+                                                    <?= $this->translate('Tiếp tục mua hàng') ?>
+                                                </a>
+                                            </p>
+                                        </div>
+                                        <?php
+                                    }
+                                    ?>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-xs-12">
+                                <a href="/" class="continue tp_title"><?= $this->translate('Tiếp tục mua hàng') ?> →</a>
+                                <div class="order-summary-block">
+                                    <h2 class="order-summary-title"><?= $this->translate('Thông tin đơn hàng') ?></h2>
+                                    <div class="summary-subtotal">
+                                        <p class="subtotal"><?= $this->translate('Tạm tính') ?>:
+                                            <span class="cart-total-price">
+                                                <?php
+                                                if ($GLOBALS['domainConfigs']['domainShowPrice'] == \Website\Model\Domain::SHOW_PRICE_CONTACT) {
+                                                    echo 'Liên hệ';
+                                                } else {
+                                                    echo number_format($totalCartMoney) . $priced;
+                                                }
+                                                ?>
+                                            </span>
+                                        </p>
+                                    </div>
+
+                                    <div class="summary-total">
+                                        <p>
+                                            <?= $this->translate('Tổng tiền') ?>:
+                                            <span>
+                                                <?php
+                                                if ($GLOBALS['domainConfigs']['domainShowPrice'] == \Website\Model\Domain::SHOW_PRICE_CONTACT) {
+                                                    echo 'Liên hệ';
+                                                } else {
+                                                    echo number_format($totalCartMoney) . $priced;
+                                                }
+                                                ?>
+                                            </span>
+                                        </p>
+                                    </div>
+                                    <div class="summary-action">
+                                        <p>
+                                            <?= $this->translate('Bạn có thể nhập mã giảm giá ở trang thanh toán') ?>
+                                        </p>
+                                        <a class="checkout-btn tp_button"
+                                           href="/cart/checkout"><?= $this->translate('Thanh toán') ?></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+

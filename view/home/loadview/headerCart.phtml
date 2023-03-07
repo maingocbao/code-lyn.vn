@@ -1,0 +1,179 @@
+<?php
+
+$cart = $this->cart()->getServiceCart();
+$cartProducts = $cart->getProducts();
+$priced = ' ₫';
+?>
+<form id="cartformpage">
+    <table id="cart-view">
+        <tbody>
+        <?php
+        if ($cartProducts) {
+            foreach ($cartProducts as $cp) {
+                $moneyDiscount = $cp->getPriceAfterDiscount($cp->getQuantity());
+                ?>
+                <tr class="item_2">
+                    <td class="img">
+                        <a href="<?= $cp->getViewLink() ?>" title="<?= $cp->getName() ?>">
+                            <img class="lazyload" src="/img/lazyLoading.gif" data-src="<?= $cp->getThumbnailUri() ?>"
+                                 alt="<?= $cp->getName() ?>">
+                        </a>
+                    </td>
+                    <td>
+                        <a class="pro-title-view" href="<?= $cp->getViewLink() ?>"
+                           title="<?= $cp->getName() ?>"><?= $cp->getName() ?></a>
+                        <span class="variant"><?= $cp->getCategoryName() ?></span>
+                        <div class="pro-price-view">
+                            <?php
+                            if ($moneyDiscount > 0) {
+                                echo '<span class="pro-price-del"><del class="compare-price tp_product_price_old">' . number_format($cp->getPrice()) . $priced . '</del></span> ';
+                                echo '<span class="tp_product_price price-sale">' . number_format($moneyDiscount) . $priced . '</span>';
+
+                            } else if (empty($cp->getPrice()) || $cp->getPrice() <= 0 || $cp->getContactPrice()) {
+                                echo '<span class="tp_product_price">' . $this->template()->loadValue('PRICE_CONTACT') . '</span>';
+                            } else {
+                                $sale = '';
+                                if ($cp->getOldPrice()) {
+                                    $sale = 'price-sale';
+
+                                    echo '<span class="pro-price-del"><del class="compare-price tp_product_price_old">' . number_format($cp->getOldPrice()) . $priced . '</del></span> ';
+                                }
+                                echo '<span class="tp_product_price ' . $sale . '">' . number_format($cp->getPrice()) . $priced . '</span>';
+                            }
+                            ?>
+                        </div>
+                        <div class="cart_quality">
+                            <i class="fal fa-minus minicart-step-down" data-id="<?= $cp->getId() ?>"></i>
+                            <input required="" size="4" max="1" value="<?= $cp->getQuantity() ?>"
+                                   class="pro-quantity-view product_<?= $cp->getId() ?>">
+                            <i class="fal fa-plus minicart-step-up" data-id="<?= $cp->getId() ?>"></i>
+                        </div>
+                        <div class="remove_link remove-cart"><a href="javascript:void(0);"
+                                                                data-id="<?= $cp->getId() ?>">Remove</a></div>
+
+                    </td>
+                </tr>
+            <?php }
+        } else { ?>
+            <tr>
+                <td>Hiện chưa có sản phẩm</td>
+            </tr>
+        <?php } ?>
+        </tbody>
+    </table>
+
+    <div class="price-all-cart">
+        <div><?= $this->translate('Tổng tiền') ?>:</div>
+        <div><?= number_format($cart->getTotalMoney()) . $priced ?></div>
+    </div>
+    <div class="btn_choice_box">
+        <button type="button" class="btn-cart-header"><a href="/product">Mua Thêm</a>
+        </button>
+        <button type="button" class="btn_add_order-header"><a href="/cart/checkout">Thanh Toán</a>
+        </button>
+    </div>
+    <div class="viewcart text-center">
+        <a href="/cart" class="linktocart"><?= $this->translate('Xem giỏ hàng') ?><i
+                    class="fal fa-long-arrow-right"></i></a>
+    </div>
+</form>
+<div id="site-close-handle" class="site-close-handle" title="Đóng">
+    <i class="fal fa-times"></i>
+</div>
+<script>
+    $("#site-close-handle").click(function () {
+        $("#site-nav--mobile").removeClass('active show-cart');
+        $("#site-overlay").removeClass('active');
+    });
+    var storeId = $('#psStoreId').val();
+    $(document).ready(function () {
+        $('.remove-cart a').on('click', function () {
+            var psId = $(this).attr('data-id');
+            if (psId > 0) {
+                removeCarts(psId);
+            }
+        });
+    });
+
+    function removeCarts(prodId) {
+        var check = confirm('Bạn muốn xóa sản phẩm ra khỏi giỏ hàng ?');
+        if (check) {
+            $.post(
+                '/cart/remove',
+                {
+                    'psId': prodId
+                },
+                function (rp) {
+                    ajaxLoadView({
+                        view: 'headerCart',
+                        onSuccess: function (rs) {
+                            $(".cart-view").html(rs);
+                        }
+                    });
+                    ajaxLoadView({
+                        view: 'countCart',
+                        // delay: 500,
+                        onSuccess: function (rs) {
+                            $(".count-holder .count").html(rs);
+                        }
+                    });
+                }
+            );
+        }
+    }
+
+    $('.minicart-step-down').click(function () {
+        var id = $(this).attr('data-id');
+        var qttElement = $('.pro-quantity-view.product_' + id);
+        var m = parseInt(qttElement.attr('max'));
+        var v = parseInt(qttElement.attr('value'));
+        if (m < v) {
+            qttElement.attr('val', v - 1);
+        } else {
+            if (m > v && v > 1) {
+                qttElement.attr('value', v - 1);
+                qttElement.html(v - 1);
+            } else if (m > v && v < 1) {
+                qttElement.html('0');
+            }
+        }
+        var products = [
+            {id: id, quantity: v - 1}
+        ];
+        addToCart(products, 2, function (rs) {
+            ajaxLoadView({
+                view: 'headerCart',
+                onSuccess: function (rs) {
+                    $('.cart-view').html(rs);
+                }
+            });
+        });
+    });
+
+
+    $('.minicart-step-up').click(function () {
+        var id = $(this).attr('data-id');
+        var qttElement = $('.pro-quantity-view.product_' + id);
+        var m = parseInt(qttElement.attr('max'));
+        var v = parseInt(qttElement.attr('value'));
+        if (v < m) {
+            qttElement.attr('value', v + 1);
+            qttElement.html(v + 1);
+        } else {
+            qttElement.attr('value', v + 1);
+            qttElement.html(v + 1);
+        }
+        var products = [
+            {id: id, quantity: v + 1}
+        ];
+        addToCart(products, 2, function (rs) {
+            ajaxLoadView({
+                view: 'headerCart',
+                onSuccess: function (rs) {
+                    $('.cart-view').html(rs);
+                }
+            });
+        });
+    });
+
+</script>

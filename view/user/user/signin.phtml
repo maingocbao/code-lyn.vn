@@ -1,0 +1,61 @@
+<?php
+$this->headTitle($this->translate("Đăng nhập"));
+$this->headScript()->appendFile($this->libs()->srcLink([
+    '/js/jquery/jquery.validationEngine.js',
+    '/js/jquery/jquery.validationEngine-vi.js',
+    '/tp/T0367/js/user.js',
+], 1));
+$this->headLink()->appendStylesheet($this->libs()->srcLink([
+    '/css/validationEngine.jquery.css',
+    '/tp/T0367/css/user.css',
+], 1));
+
+$paramUri = $this->uriParams()->getRequest()->getQuery('redirectUri');
+?>
+<main class="mainContent-theme">
+    <div class="layout-account">
+        <div class="container">
+            <div class="signup-flex">
+                <div class="col-lg-6 col-md-12 wrapbox-heading-account">
+                    <div class="header-page">
+                        <h1 class="header-user-singnup"> ĐĂNG NHẬP</h1>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-12 wrapbox-content-account">
+                    <div class="user-box">
+                        <form accept-charset="UTF-8" id="customer_login">
+                            <div class="clearfix large_form">
+                                <input required="" type="email" value="" id="username" name="username"
+                                       placeholder="Nhập email hoặc số diện thoại" class="text validate[required]">
+                                <input required="" type="password" value="" name="password" id="password"
+                                       placeholder="<?= $this->translate('Mật khẩu') ?>"
+                                       class="text validate[required]">
+                            </div>
+                            <div class="action_bottom text-center" style="border-bottom: none; margin-bottom: 0px">
+                                <input id="btnSignIn" class="btn-more btn-login" type="button"
+                                       value="<?= $this->translate('Đăng nhập') ?>">
+                                <a href="/user/getpassword"
+                                   class="style-forget"><?= $this->translate('Quên mật khẩu') ?>?</a>
+                            </div>
+                            <div class="req_pass text-center">
+                                <a class="btn-more btn-register" href="/user/signup"
+                                   title="<?= $this->translate('Đăng ký') ?>"><?= $this->translate('Đăng ký') ?></a>
+                            </div>
+                            <div class="block social-login--facebooks">
+                                <div class="divider">
+                                    <span>Hoặc</span></div>
+                                <div class="login-social">
+                                    <a href="/user/fbsignin"><i class="fab fa-facebook-f"></i> <span>Đăng nhập bằng tài khoản facebook</span></a>
+                                </div>
+                                <div class="login-social" style="background: #df4a32;margin-top: 10px">
+                                    <a href="/user/ggsignin"><i class="fab fa-google-plus-g"></i>
+                                        <span>Đăng nhập bằng tài khoản google</span></a></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+

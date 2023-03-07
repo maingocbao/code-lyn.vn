@@ -1,0 +1,8 @@
+<?php
+$countCart = $this->cart()->getServiceCart()->getTotalQuantities();
+if($countCart){
+    echo($countCart);
+}else{
+    echo 0;
+}
+?>

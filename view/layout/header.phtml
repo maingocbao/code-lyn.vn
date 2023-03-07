@@ -1,0 +1,261 @@
+<?php
+
+/* @var $user \User\Model\User */
+$user = null;
+if ($this->user()->hasIdentity()) {
+    $user = $this->user()->getUser();
+}
+$countCart = $this->cart()->getServiceCart()->getTotalQuantities();
+$page = $this->uriParams()->getRequest()->getQuery('page');
+/* @var \Zend\Paginator\Paginator $paginator */
+
+?>
+<header id="shopify-section-header" class="shopify-section">
+    <div class="loader-wrapper">
+        <div class="header-loader-desktop">
+            <div class="top">
+                <div class="medium knbaiw">
+                    <?php
+                    if ($user) { ?>
+                        <a  href="/profile"><i class="fal fa-user-alt"></i><span><?= (isset($user) && $user) ? $user->getFullName() : $this->translate('Đang cập nhật') ?></span></a>
+                    <?php } else { ?>
+                        <a  href="/user/signin"><i class="fal fa-user-alt"></i>Đăng Nhập</a>
+                    <?php } ?>
+                    </div>
+                <div class="smail knbaiw "> <a href="/news">Blog</a></div>
+<!--                <div class="medium knbaiw">Newsletter</div>-->
+<!--                <div class="smail knbaiw">Help</div>-->
+                <div class="large knbaiw">
+                    <?php if(!empty($GLOBALS['domainConfigs']['locales']['supported'])){
+                        echo'<div class="language-hd">';
+
+                        $language = ''; $langCurrent = '';
+                        $langName = [
+                            'Tiếng Việt (Vietnamese)' => 'VN',
+                            'English (US)' => 'EN',
+                            '中國 (Chinese (T))' => 'Taiwan',
+                            'Français (French)' => 'Français',
+                            '日本語 (Japanese)' => 'Japan',
+                            '한국어 (Korean)' => 'Korean',
+                            '中国 (Chinese)' => 'Chinese',
+                            'ประเทศไทย (Thailand)' => 'Thailand',
+                            'เขมร (Khmer)' => 'Khmer',
+                        ];
+
+
+                        if (isset($GLOBALS['domainConfigs']['locales']['supported']) && count($GLOBALS['domainConfigs']['locales']['supported']) > 1) {
+                            if ($GLOBALS['domainConfigs']['locales']['translateType'] == \Website\Model\Domain::TRANSLATE_TYPE_DEFAULT) {
+                                foreach ($GLOBALS['domainConfigs']['locales']['supported'] as $locale) {
+                                    $class = ''; $img = '';
+                                    if ($locale['name'] == 'Tiếng Việt (Vietnamese)') {
+                                        $img = 'country1.jpg';
+                                    } else if ($locale['name'] == 'English (US)') {
+                                        $img = 'country2.jpg';
+                                    } else if ($locale['name'] == '中國 (Chinese (T))') {
+                                        $img = 'taiwan.png';
+                                    }else if ($locale['name'] == 'Français (French)') {
+                                        $img = 'french.jpg';
+                                    }else if ($locale['name'] == '日本語 (Japanese)') {
+                                        $img = 'japan.jpg';
+                                    }else if ($locale['name'] == '한국어 (Korean)') {
+                                        $img = 'korean.jpg';
+                                    }else if ($locale['name'] == '中国 (Chinese)') {
+                                        $img = 'china.jpg';
+                                    }else if ($locale['name'] == 'ประเทศไทย (Thailand)') {
+                                        $img = 'thailand.jpg';
+                                    }else if ($locale['name'] == 'เขมร (Khmer)') {
+                                        $img = 'Khmer.png';
+                                    }
+
+                                    if ($locale['isActive']==1){
+                                        $class = 'class="active"';
+                                        $langCurrent = '<span class="name-lg">'.$langName[$locale['name']].'</span>';
+                                    }
+                                    $language .= '<li><a ' . $class . ' href="' . $locale['url'] . '">' .'<span class="name-lg">'.$langName[$locale['name']].'</span>'. '</a></li>';
+
+                                }
+                            }else if($GLOBALS['domainConfigs']['locales']['translateType'] == \Website\Model\Domain::TRANSLATE_TYPE_GOOGLE) { ?>
+                                <div style='float:right;'>
+                                    <div id="google_translate_element"></div>
+                                </div>
+                                <?php
+                            }
+                        }
+                        if ($language){
+                            echo'<div class="language">
+                        <p class="toggle tp_text_color">'. $langCurrent .' <i class="fas fa-angle-down"></i></i></p>
+                        <ul>'.$language.'</ul>
+                    </div>';
+                        }
+                        echo'</div>';
+                    }?>
+                </div>
+            </div>
+            <div class="bottom">
+                <div class="hamburger container-fluid">
+                    <div id="site-menu-handle" class="hamburger-menu ">
+                        <div class="menu-icon-mobile" onclick="openNav()">
+                            <i class="fas fa-bars"></i>
+                        </div>
+                        <div class="search-desktop">
+                            <button id="search-toggle"><i class="far fa-search"></i></button>
+                            <div class="search-view-all">
+                                <form method="get" action="/search">
+                                    <div class="search-wrapper">
+                                        <input type="text" id="search-input" autocomplete="off" name="q"
+                                               placeholder="Search By Typing Keywords...">
+                                        <i class="far fa-times"></i>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="logo-header">
+                        <a href="/" class="logo">
+                            <img src="<?= $this->store()->getLogoUri() ?>" alt="<?= $_SERVER['HTTP_HOST'] ?>">
+                        </a>
+                    </div>
+                    <div class="menu-desktop ">
+
+                        <div class="styles-menu">
+                            <?php
+
+                            if ($this->template()->menuIsExisted(['position' => \Website\Model\Menu::POSITION_HEADER])) {
+                                echo $this->render('/layout/menucustom');
+                            } else {
+                                echo $this->render('/layout/menucache');
+                            }
+                            ?>
+                        </div>
+                    </div>
+                    <div class="icon-header col-md-4 col-sm-4 col-xs-4">
+                        <div class="search-desktop">
+                            <button class="search-toggle"><i class="far fa-search"></i></button>
+                            <div class="search-view-all">
+                                <form method="get" action="/search">
+                                    <div class="search-wrapper">
+                                        <input type="text" id="search-input" autocomplete="off" name="q"
+                                               placeholder="Search By Typing Keywords...">
+                                        <i class="far fa-times"></i>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+                        <div class="love-desktop">
+                            <a href="/wishlist"><i class="far fa-heart"></i>
+                                <span class="number-wishlist">
+                                <?php
+                                $wishlist = $this->product()->getWishlistCookie();
+                                if($wishlist){
+                                    $i = 0;
+                                    foreach ($wishlist as $w){
+                                        $i++;
+                                    }
+                                    echo($i);
+                                }
+
+                                ?>
+                                    </span>
+                            </a>
+                        </div>
+                        <div class="user-desktop">
+                            <?php
+                            if ($user) { ?>
+                            <a  href="/profile"><i class="far fa-user"></i></a>
+                            <?php } else { ?>
+                            <a  href="/user/signin"><i class="far fa-user"></i></a>
+                            <?php } ?>
+                        </div>
+                        <div class="cart-desktop">
+                            <svg class="Styles__BagIcon-sc-744ty0-12 dsqEKk" width="20" height="20" viewBox="0 0 16 18"
+                                 fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+                                 aria-labelledby="a0dab3cc-ea64-40ea-be33-406cada52eb8">
+                                <title id="a0dab3cc-ea64-40ea-be33-406cada52eb8">Bag</title>
+                                <path fill-rule="evenodd" clip-rule="evenodd"
+                                      d="M12.2121 3.55H15.8V18H0.5V3.55H4.08793C4.4824 1.6705 6.15692 0.25 8.15 0.25C10.1431 0.25 11.8176 1.6705 12.2121 3.55ZM10.6589 3.55C10.3193 2.55725 9.40342 1.8238 8.31676 1.75525L8.15 1.75C6.99106 1.75 5.99789 2.50685 5.64105 3.55H10.6589ZM14.299 5.049H1.999V16.499H14.299V5.049Z"
+                                      fill="black"></path>
+                            </svg>
+                            <span class="cart-number"><?= $countCart ?></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="myNav" class="overlay">
+                <div class="icon-moblie">
+                    <div class="icon-moblie-times" onclick="closeNav()"><i class="fal fa-times"></i></div>
+                    <div class="icon-moblie-user">   <?php
+                        if ($user) { ?>
+                            <a  href="/profile"><i class="far fa-user"></i></a>
+                        <?php } else { ?>
+                            <a  href="/user/signin"><i class="far fa-user"></i></a>
+                        <?php } ?>
+                    </div>
+<!--                    <div class="icon-mobile-search"><i class="far fa-search"></i></div>-->
+                </div>
+                <div class="menu-list-mobile">
+                    <div class="style-toggle">
+                        <?= $this->render('layout/menumobile'); ?>
+                    </div>
+
+<!--                    <div class="img-mobile-banner">-->
+<!--                        <div class="img-wrapper">-->
+<!--                            <div class="mobile-content">FEATURED</div>-->
+<!--                            <div class="img-line-item">-->
+<!--                                <a class="img-line-item-left">-->
+<!--                                    <img src="//images.ctfassets.net/wl6q2in9o7k3/6xl8jxc12hCwwH1lMk1A4t/7bc30f784d8abf34356706a7a0c1ccd0/Studio_Summer_Web_Nav.jpg" alt="">-->
+<!--                                </a>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div class="top-mobile">-->
+<!--                        <ul class="mobile-style-item">-->
+<!--                            <li class="mobile-style-item-1"><a>Help</a></li>-->
+<!--                            <li class="mobile-style-item-2"><a>Blog</a></li>-->
+<!--                            <li class="mobile-style-item-3"><a>Newsletter</a></li>-->
+<!--                        </ul>-->
+<!--                        <div class="mobile-language">-->
+<!--                            <button type="button">-->
+<!--                                <div class="large knbaiw">-->
+<!--                                    <svg width="25px" height="17px" viewBox="0 0 103 103"-->
+<!--                                         xmlns="http://www.w3.org/2000/svg" role="img"-->
+<!--                                         aria-labelledby="b17f0396-e318-488c-b7c6-7c38fcfc4f49"><title-->
+<!--                                                id="b17f0396-e318-488c-b7c6-7c38fcfc4f49">United States</title>-->
+<!--                                        <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">-->
+<!--                                            <g fill-rule="nonzero">-->
+<!--                                                <g>-->
+<!--                                                    <circle fill="#F0F0F0" cx="51.2" cy="51.2" r="51.2"></circle>-->
+<!--                                                    <g transform="translate(1.600000, 11.000000)" fill="#D80027">-->
+<!--                                                        <path d="M47.374,40.2 L100.8,40.2 C100.8,35.5788 100.184,31.102 99.0362,26.8434 L47.374,26.8434 L47.374,40.2 Z"></path>-->
+<!--                                                        <path d="M47.374,13.487 L93.2852,13.487 C90.151,8.3726 86.1436,3.852 81.4712,0.1304 L47.374,0.1304 L47.374,13.487 Z"></path>-->
+<!--                                                        <path d="M49.6,91.4 C61.6498,91.4 72.7252,87.2352 81.4712,80.2696 L17.7288,80.2696 C26.4748,87.2352 37.5502,91.4 49.6,91.4 Z"></path>-->
+<!--                                                        <path d="M5.9148,66.913 L93.2852,66.913 C95.8014,62.8072 97.7528,58.3192 99.0362,53.5564 L0.1638,53.5564 C1.4472,58.3192 3.3986,62.8072 5.9148,66.913 Z"></path>-->
+<!--                                                    </g>-->
+<!--                                                    <path d="M23.7168,7.9956 L28.3826,7.9956 L24.0426,11.1486 L25.7004,16.2504 L21.3606,13.0974 L17.0208,16.2504 L18.4528,11.843 C14.6316,15.026 11.2824,18.7552 8.5224,22.9104 L10.0174,22.9104 L7.2548,24.9174 C6.8244,25.6354 6.4116,26.3648 6.016,27.105 L7.3352,31.1652 L4.874,29.377 C4.2622,30.6732 3.7026,31.9986 3.1996,33.3516 L4.653,37.8252 L10.0174,37.8252 L5.6774,40.9782 L7.3352,46.08 L2.9954,42.927 L0.3958,44.8158 C0.1356,46.9074 0,49.0378 0,51.2 L51.2,51.2 C51.2,22.9232 51.2,19.5896 51.2,0 C41.0856,0 31.657,2.934 23.7168,7.9956 Z M25.7004,46.08 L21.3606,42.927 L17.0208,46.08 L18.6786,40.9782 L14.3386,37.8252 L19.703,37.8252 L21.3606,32.7234 L23.0182,37.8252 L28.3826,37.8252 L24.0426,40.9782 L25.7004,46.08 Z M24.0426,26.0634 L25.7004,31.1652 L21.3606,28.0122 L17.0208,31.1652 L18.6786,26.0634 L14.3386,22.9104 L19.703,22.9104 L21.3606,17.8086 L23.0182,22.9104 L28.3826,22.9104 L24.0426,26.0634 Z M44.0656,46.08 L39.7258,42.927 L35.386,46.08 L37.0438,40.9782 L32.7038,37.8252 L38.0682,37.8252 L39.7258,32.7234 L41.3834,37.8252 L46.7478,37.8252 L42.4078,40.9782 L44.0656,46.08 Z M42.4078,26.0634 L44.0656,31.1652 L39.7258,28.0122 L35.386,31.1652 L37.0438,26.0634 L32.7038,22.9104 L38.0682,22.9104 L39.7258,17.8086 L41.3834,22.9104 L46.7478,22.9104 L42.4078,26.0634 Z M42.4078,11.1486 L44.0656,16.2504 L39.7258,13.0974 L35.386,16.2504 L37.0438,11.1486 L32.7038,7.9956 L38.0682,7.9956 L39.7258,2.8938 L41.3834,7.9956 L46.7478,7.9956 L42.4078,11.1486 Z"-->
+<!--                                                          fill="#0052B4"></path>-->
+<!--                                                </g>-->
+<!--                                            </g>-->
+<!--                                        </g>-->
+<!--                                    </svg>-->
+<!---->
+<!--                                    United States-->
+<!--                                    <i class="fal fa-angle-down"></i>-->
+<!--                                </div>-->
+<!--                            </button>-->
+<!--                        </div>-->
+<!--                    </div>-->
+                </div>
+            </div>
+        </div>
+    </div>
+
+</header>
+<div id="site-nav--mobile" class="site-nav style--sidebar">
+    <div id="site-cart" class="site-nav-container">
+        <div class="site-nav-container-last">
+            <p class="title">Giỏ hàng</p>
+            <div class="cart-view clearfix"></div>
+        </div>
+    </div>
+</div>

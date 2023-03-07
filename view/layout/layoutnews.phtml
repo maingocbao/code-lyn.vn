@@ -1,0 +1,68 @@
+<?php echo $this->doctype(); ?>
+<html lang="vi-VN" data-nhanh.vn-template="T0367">
+<head>
+    <?php
+    $storeId = $GLOBALS['domainConfigs']['storeId'];
+    echo $this->template()->showMetaTag();
+    ?>
+    <?php
+    echo $this->template()->showMetaTag();
+    ?>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <?php
+    echo $this->headTitle()->setSeparator(' - ');
+    $appId = $this->store()->getDomain()->getAppId();
+    if($appId){
+        $this->headMeta()->appendProperty('fb:app_id', $appId);
+    }
+    $extraSettings = $this->store()->getDomain()->getExtraSettings();
+    $extraSettingsArray = json_decode($extraSettings, true);
+    if(isset($extraSettingsArray['google']['googleSiteVerification'])){
+        $this->headMeta()->appendName('google-site-verification', $extraSettingsArray['google']['googleSiteVerification']);
+    }
+    echo $this->headMeta();
+    echo $this->headLink(['rel' => 'shortcut icon', 'type' => 'image/vnd.microsoft.icon', 'href' => $this->store()->getFavicon() ?: '/images/favicon.ico']);
+    $style = [
+        '/css/bootstrap/bootstrap.4.3.1.min.css',
+        '/css/bootstrap/bootstrap-theme.css',
+        '/css/fontAwesome/font-awesome-5.12.0.min.css',
+        '/css/jqueryUI/jqui.css',
+        '/tp/T0367/css/slick.css',
+        '/tp/T0367/css/style.css',
+    ];
+    echo '<link rel="stylesheet" href="' . $this->libs()->srcLink($style, 1) . '" type="text/css">';
+    ?>
+    <?= $this->template()->loadScripts(['positionHead' => true]); ?> </head>
+<body>
+
+<input type="hidden" id="storeId" value="<?= $storeId ?>">
+
+<?= $this->render('layout/headernews') ?>
+<?= $this->content ?>
+<?= $this->render('layout/footer') ?>
+
+<?php
+$js = array_merge($this->template()->loadJsLanguages(), [
+    '/js/jquery/jquery.min.js',
+    '/js/bootstrap/bootstrap.4.3.1.min.js',
+    '/js/lib.js',
+    '/js/jquery/jquery-ui-1.10.3.custom.min.js',
+    '/js/jquery/jquery.number.min.js',
+    'js/slick-slider/slick.min.js',
+    '/tp/T0367/js/main.js',
+    '/tp/T0367/js/news.js',
+
+]);
+echo '<script type="text/javascript" src="' . $this->libs()->srcLink($js, 1) . '"></script>';
+
+?>
+
+<?php
+echo $this->headScript();
+echo $this->inlineScript();
+echo $this->template()->loadScripts();
+
+?>
+</body>
+</html>

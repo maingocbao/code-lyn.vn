@@ -1,0 +1,160 @@
+<?php
+$storeId = $GLOBALS['domainConfigs']['storeId'];
+
+$this->headTitle($this->translate("Quản lý đơn hàng"));
+echo '<link rel="canonical" rel="nofollow" href="/order" />';
+/** @var \Zend\Paginator\Paginator $paginator */
+$paginator = $this->paginator;
+
+$orders = $this->orders;
+$user = $this->user;
+
+$payment = new \Payment\Service\Payment();
+$this->headScript()->appendFile($this->libs()->srcLink([
+    '/tp/T0367/js/user.js',
+], 1));
+$this->headLink()->appendStylesheet($this->libs()->srcLink([
+    '/tp/T0367/css/user.css',
+], 1));
+$this->headLink([
+    'rel' => 'canonical',
+    'href' => getCurrentFullUrl(true) . "/order"
+]);
+$priced = ' ₫';
+?>
+<div class="container" style="padding-bottom: 35px">
+    <div class="row">
+        <div class="col-lg-2 col-md-2 hidden-xs hidden-sm">
+            <div class="menuPv">
+                <div class="userList">
+                    <a href="/profile"><?= $this->translate('Tài khoản của tôi') ?></a>
+                    <a href="/profile/edit"><?= $this->translate('Thông tin cá nhân') ?></a>
+                    <a href="/order"><b><?= $this->translate('Lịch sử đơn hàng') ?></b></a>
+                    <a href="/profile/changepassword"><?= $this->translate('Thay đổi mạt khẩu') ?></a>
+                    <a href="/user/signout"><?= $this->translate('Đăng xuất') ?></a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-10 col-md-10 col-xs-12 col-sm-12">
+            <div id="profileContent">
+                <h1><?= $this->translate('Đơn hàng của tôi') ?></h1>
+                <div class="orderDes">
+                    <?= $this->template()->loadValue('ORDER_DESCRIPTION') ?>
+                </div>
+                <div class="orderContent">
+                    <?php
+                    if ($paginator && $paginator->getCurrentModels()) {
+                        ?>
+                        <div class="page-content">
+                            <div class="cart_header_labels hidden-xs clearfix">
+                                <div class="row">
+                                    <div class="label_item col-xs-12 col-sm-2 col-md-2">
+                                        <div class="cart_product first_item">
+                                            <?= $this->translate('Mã đơn hàng') ?>
+                                        </div>
+                                    </div>
+                                    <div class="label_item col-xs-12 col-sm-2 col-md-2">
+                                        <div class="cart_description item">
+                                            <?= $this->translate('Ngày mua') ?>
+                                        </div>
+                                    </div>
+                                    <div class="label_item col-xs-12 col-sm-4 col-md-4">
+                                        <div class="cart_quantity item">
+                                            <?= $this->translate('Sản phẩm') ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="label_item col-xs-12 col-sm-2 col-md-2">
+                                        <div class="cart_total item">
+                                            <?= $this->translate('Tổng tiền') ?>
+                                        </div>
+                                    </div>
+                                    <div class="label_item col-xs-12 col-sm-2 col-md-2">
+                                        <div class="cart_delete last_item">
+                                            <?= $this->translate('Trạng thái') ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ajax_content_cart">
+                                <div class="row">
+                                    <?php
+                                    /** @var \Order\Model\Order $order */
+                                    foreach ($paginator->getCurrentModels() as $order) {
+                                        $products = $orders[$order->getId()]->getProducts();
+                                        $totalOrderPrice = 0;
+                                        ?>
+                                        <div class="cpro_item image col-xs-6 col-sm-6 col-md-2">
+                                            <div class="cpro_item_inner">
+                                                   <span>
+                                                        <b class="hidden-lg hidden-md"
+                                                           style="color: #7d7d7dee"><?= $this->translate('Đơn hàng') ?> :</b>
+                                                        <b style="color: #000"><?= $order->getId() ?></b>
+                                                   </span>
+                                            </div>
+                                        </div>
+                                        <div class="cpro_item text-left title col-xs-6 col-sm-6 col-md-2">
+                                            <div class="cpro_item_inner">
+                                                   <span>
+                                                       <b class="hidden-lg hidden-md"
+                                                          style="color: #7d7d7dee"><?= $this->translate('Ngày mua') ?> :</b>
+                                                       <b><?= date("d/m/Y", strtotime($order->getCreatedDate())) ?></b>
+                                                   </span>
+                                            </div>
+                                        </div>
+
+                                        <div class="cpro_item qty productOrder text-center col-xs-12 col-sm-12 col-md-4">
+                                            <div class="cpro_item_inner" style="text-align: left">
+                                                <?php
+                                                if ($products) {
+                                                    foreach ($products as $pOrder) {
+                                                        /* @var $pOrder \Order\Model\Product */
+                                                        $p = $pOrder->getProduct();
+                                                        echo '<span style="display:block;padding-bottom: 5px"><b class="tp_product_name">- ' . $p->getName() . '</b></span>';
+                                                    }
+                                                }
+                                                ?>
+                                            </div>
+                                        </div>
+                                        <div class="cpro_item line-price col-xs-6 col-sm-6 col-md-2">
+                                            <div class="cpro_item_inner">
+                                                        <span class="price product-price money_line">
+                                                            <span class="money">
+                                                                <b class="hidden-lg hidden-md"
+                                                                   style="color: #7d7d7dee"><?= $this->translate('Tổng tiền') ?> :</b>
+                                                                <b><?= number_format($order->calculateTotalMoney()) . $priced ?></b>
+                                                            </span>
+                                                        </span>
+                                            </div>
+                                        </div>
+                                        <div class="cpro_item remove col-xs-6 col-sm-6 col-md-2">
+                                            <div class="cpro_item_inner">
+                                                    <span>
+                                                        <b class="hidden-lg hidden-md"
+                                                           style="color: #7d7d7dee"><?= $this->translate('Trạng thái') ?> :</b>
+                                                        <b><?= $order->getStatusName($order->getStatus()) ?></b>
+                                                    </span>
+                                            </div>
+                                        </div>
+
+                                        <?php
+                                    }
+                                    ?>
+                                </div>
+                            </div>
+                        </div>
+                    <?php } else { ?>
+                        <div class="page-content not-item text-center">
+                            <div class="img text-center">
+                                <p style="display: block;text-align: center;padding: 10px 0;margin: 0"><?= $this->translate('Chưa có đơn hàng nào') ?></p>
+                            </div>
+                        </div>
+                    <?php } ?>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div id="dMsg"></div>

@@ -1,0 +1,64 @@
+<?php echo $this->doctype(); ?>
+<html lang="vi-VN" data-nhanh.vn-template="T0367">
+<head>
+    <?php
+    $storeId = $GLOBALS['domainConfigs']['storeId'];
+    echo $this->template()->showMetaTag();
+    ?>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <?php
+    echo $this->headTitle()->setSeparator(' - ');
+    $appId = $this->store()->getDomain()->getAppId();
+    if($appId){
+        $this->headMeta()->appendProperty('fb:app_id', $appId);
+    }
+    $extraSettings = $this->store()->getDomain()->getExtraSettings();
+    $extraSettingsArray = json_decode($extraSettings, true);
+    if(isset($extraSettingsArray['google']['googleSiteVerification'])){
+        $this->headMeta()->appendName('google-site-verification', $extraSettingsArray['google']['googleSiteVerification']);
+    }
+    echo $this->headMeta();
+    echo $this->headLink(['rel' => 'shortcut icon', 'type' => 'image/vnd.microsoft.icon', 'href' => $this->store()->getFavicon() ?: '/images/favicon.ico']);
+    $style = [
+        '/css/bootstrap/bootstrap5/bootstrap.min.css',
+        '/css/bootstrap/bootstrap-theme.css',
+        '/css/fontAwesome/fontawesome.5.15.3.min.css',
+        '/css/jqueryUI/jqui.css',
+        '/css/fancybox-3.5.7/fancybox3.5.7.css',
+        '/css/slick-slider/slick.css',
+        '/tp/T0367/fonts/font.css',
+        '/tp/T0367/css/style.css',
+    ];
+    echo '<link rel="preload" href="' . $this->libs()->srcLink($style, 15) . '" as="style">';
+    echo '<link rel="stylesheet" href="' . $this->libs()->srcLink($style, 15) . '" type="text/css">';
+    echo $this->template()->loadScripts(['positionHead' => true]);
+    ?>
+</head>
+<body class="tp_background tp_text_color">
+
+<input type="hidden" id="storeId" value="<?= $storeId ?>">
+<?php
+echo $this->render('layout/header');
+echo $this->content;
+echo $this->render('layout/footer');
+
+$js = array_merge($this->template()->LoadJsLanguages(), [
+    '/js/jquery/jquery.min.js',
+    '/js/jquery/jquery.cookie.js',
+    '/js/lib.js',
+    '/js/bootstrap/bootstrap5/bootstrap.bundle.min.js',
+    '/js/jquery/jquery-ui-1.10.3.custom.min.js',
+    '/js/jquery/jquery.number.min.js',
+    'js/jquery/fancybox-3.5.7/fancybox3.5.7.js',
+    'js/slick-slider/slick.min.js',
+    '/tp/T0367/js/main.js',
+]);
+echo '<script  type="text/javascript" src="' . $this->libs()->srcLink($js, 5) . '"></script>';
+echo $this->headScript();
+echo $this->inlineScript();
+echo $this->template()->loadScripts();
+?>
+</body>
+</html>
+

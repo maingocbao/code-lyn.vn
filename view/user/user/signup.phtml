@@ -1,0 +1,60 @@
+<?php
+$this->headTitle($this->translate("Đăng ký"));
+$this->headScript()->appendFile($this->libs()->srcLink([
+    '/js/jquery/jquery.validationEngine.js',
+    '/js/jquery/jquery.validationEngine-vi.js',
+    '/tp/T0367/js/user.js'
+], 1));
+$this->headLink()->appendStylesheet($this->libs()->srcLink([
+    '/css/validationEngine.jquery.css',
+    '/css/JqueryUi.css',
+    '/tp/T0367/css/user.css',
+], 1));
+?>
+<main class="mainContent-theme">
+    <div class="layout-account">
+        <div class="container">
+            <div class="signup-flex col-lg-12">
+                <div class="col-lg-6 col-md-12 wrapbox-heading-account">
+                    <div class="header-page">
+                        <h1 class="header-user-singnup"> Tạo tài khoản</h1>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-12 wrapbox-content-account">
+                    <div class="user-box">
+                        <form accept-charset="UTF-8" id="create_customer">
+                            <div class="clearfix large_form">
+                                <input required="" type="text" value="" name="textName"
+                                       placeholder="<?= $this->translate('Họ và tên') ?>" id="fullName"
+                                       class="text validate[required]">
+                                <input required="" type="email" value="" name="textEmail"
+                                       placeholder="<?= $this->translate('Điền địa chỉ Email của bạn') ?>" id="email"
+                                       class="text validate[required,custom[email]]">
+                                <input required="" type="date" name="birthday"
+                                       placeholder="<?= $this->translate('Ngày sinh') ?>" id="date"
+                                       class="text hasDatepicker validate[required]">
+                                <input type="number" name="mobile"
+                                       placeholder="<?= $this->translate('Số điện thoại') ?>" id="mobile"
+                                       class="text validate[required,custom[phone]]">
+                                <input required="" type="text" value="" name="address"
+                                       placeholder="<?= $this->translate('Địa chỉ') ?>" id="address" class="text">
+                                <input required="" type="password" value="" name="textPass"
+                                       placeholder="<?= $this->translate('Mật khẩu') ?>" id="password"
+                                       class="password text validate[required,minSize[6]]">
+                            </div>
+                            <div class="action_bottom">
+                                <input id="btnSingup" class="btn-more btn-login" type="button"
+                                       value="<?= $this->translate('Đăng ký') ?>">
+                            </div>
+                            <div class="req_pass text-center">
+                                <a class="btn-more btn-register" href="/user/signin">Quay về</a>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
